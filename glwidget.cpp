@@ -162,7 +162,6 @@ void GLWidget::paintGL() {
   glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
   glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
   glMultMatrixf(panMatrix);
-  //glGetDoublev(GL_MODELVIEW_MATRIX, panMatrix);
   //glLoadMatrixd(panMatrix);
   //glTranslated(-xPos-xTrans, -yPos-yTrans, -zPos-zTrans);
   glTranslated(-xPos, -yPos, -zPos);
