@@ -25,9 +25,11 @@
 #include <QtGui/QWidget>
 
 class GLMdiChild;
+class DimensionsGroupBox;
+class MeshInformationGroupBox;
+class PropertiesGroupBox;
 class QAction;
 class QMenu;
-class QGroupBox;
 class QLabel;
 class QMdiArea;
 class QMdiSubWindow;
@@ -66,9 +68,6 @@ class STLViewer : public QMainWindow {
   void createToolBars();
   void createStatusBar();
   void createDockWindows();
-  void createDimensionsGroupBox();
-  void createMeshInformationGroupBox();
-  void createPropertiesGroupBox();
   void readSettings();
   void writeSettings();
 
@@ -103,15 +102,9 @@ class STLViewer : public QMainWindow {
   QAction *exitAct;
   QAction *aboutAct;
 
-  QLabel *xMax, *xMin, *xDelta;
-  QLabel *yMax, *yMin, *yDelta;
-  QLabel *zMax, *zMin, *zDelta;
-  QLabel *num_facets, *num_points;
-  QLabel *volume, *surface;
-
-  QGroupBox *dimensionsGroupBox;
-  QGroupBox *meshInformationGroupBox;
-  QGroupBox *propertiesGroupBox;
+  DimensionsGroupBox *dimensionsGroupBox;
+  MeshInformationGroupBox *meshInformationGroupBox;
+  PropertiesGroupBox *propertiesGroupBox;
 };
 
 #endif // STLVIEWER_H

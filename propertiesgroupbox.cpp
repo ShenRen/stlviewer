@@ -18,42 +18,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef GLMDICHILD_H
-#define GLMDICHILD_H
+#include <QtGui/QtGui>
 
-#include "glwidget.h"
-#include "entity.h"
+#include "propertiesgroupbox.h"
 
-class GLMdiChild : public GLWidget {
+PropertiesGroupBox::PropertiesGroupBox(QWidget *parent)
+    : QGroupBox(tr("Properties"), parent) {
 
-  Q_OBJECT
+  QGridLayout *layout = new QGridLayout;
 
- public:
-  GLMdiChild(QWidget *parent = 0);
-  ~GLMdiChild();
+  layout->addWidget(new QLabel("Volume:"), 0, 0);
+  volume = new QLabel("");
+  volume->setAlignment(Qt::AlignRight);
+  layout->addWidget(volume, 0, 1);
+  layout->addWidget(new QLabel("Surface:"), 1, 0);
+  surface = new QLabel("");
+  surface->setAlignment(Qt::AlignRight);
+  layout->addWidget(surface, 1, 1);
+  layout->addWidget(new QLabel("mm^3"), 0, 2);
+  layout->addWidget(new QLabel("mm^3"), 1, 2);
 
-  void newFile();
-  bool loadFile(const QString &fileName);
-  bool save();
-  bool saveAs();
-  bool saveFile(const QString &fileName);
+  setLayout(layout);
+}
 
-  QString userFriendlyCurrentFile();
-  QString currentFile() { return curFile; };
+PropertiesGroupBox::~PropertiesGroupBox() {}
 
-  Entity::Stats getStats() const { return entity_->stats(); };
+void PropertiesGroupBox::reset() {
+  volume->setText("");
+  surface->setText("");
+}
 
- protected:
-  void closeEvent(QCloseEvent *event);
+void PropertiesGroupBox::setValues(const Entity::Stats stats) {
+  QString data;
 
- private:
-  bool maybeSave();
-  void setCurrentFile(const QString &fileName);
-  QString strippedName(const QString &fullFileName);
-
-  Entity *entity_;
-  QString curFile;
-  bool isUntitled;
-};
-
-#endif  // GLMDICHILD_H
+  data.setNum(stats.volume);
+  volume->setText(data);
+  //data.setNum(stats.surface);
+  //surface->setText(data);
+}

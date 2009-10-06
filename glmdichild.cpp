@@ -21,7 +21,6 @@
 #include <QtGui/QtGui>
 
 #include "glmdichild.h"
-#include "entity.h"
 
 GLMdiChild::GLMdiChild(QWidget *parent)
     : GLWidget(parent) {
@@ -53,39 +52,6 @@ bool GLMdiChild::loadFile(const QString &fileName) {
   updateGL();
   setCurrentFile(fileName);
 
-  //QString data;
-
-  //data.setNum(entity_->stats_.max.x);
-  //xMax->setText(data);
-  //data.setNum(entity_->stats_.min.x);
-  //xMin->setText(data);
-  //data.setNum(entity_->stats_.max.x-entity_->stats_.min.x);
-  //xDelta->setText(data);
-
-  //data.setNum(entity_->stats_.max.y);
-  //yMax->setText(data);
-  //data.setNum(entity_->stats_.min.y);
-  //yMin->setText(data);
-  //data.setNum(entity_->stats_.max.y-entity_->stats_.min.y);
-  //yDelta->setText(data);
-
-  //data.setNum(entity_->stats_.max.z);
-  //zMax->setText(data);
-  //data.setNum(entity_->stats_.min.z);
-  //zMin->setText(data);
-  //data.setNum(entity_->stats_.max.z-entity_->stats_.min.z);
-  //zDelta->setText(data);
-
-  //data.setNum(entity_->stats_.num_facets);
-  //num_facets->setText(data);
-  ////data.setNum(entity_->stats_.num_points);
-  ////num_points->setText(data);
-
-  //data.setNum(entity_->stats_.volume);
-  //volume->setText(data);
-  ////data.setNum(entity_->stats_.surface);
-  ////surface->setText(data);
-
   return true;
 }
 
@@ -98,8 +64,7 @@ bool GLMdiChild::save() {
 }
 
 bool GLMdiChild::saveAs() {
-  //QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), curFile, tr("STL Files (*.stl);;All Files (*.*)"));
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), curFile);
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), curFile, tr("STL Files (*.stl);;All Files (*.*)"));
   if (fileName.isEmpty())
     return false;
   return saveFile(fileName);

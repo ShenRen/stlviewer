@@ -18,42 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef GLMDICHILD_H
-#define GLMDICHILD_H
+#ifndef MESHINFORMATIONGROUPBOX_H
+#define MESHINFORMATIONGROUPBOX_H
 
-#include "glwidget.h"
+#include <QtGui/QGroupBox>
+
 #include "entity.h"
 
-class GLMdiChild : public GLWidget {
+class QLabel;
+
+class MeshInformationGroupBox : public QGroupBox {
 
   Q_OBJECT
 
  public:
-  GLMdiChild(QWidget *parent = 0);
-  ~GLMdiChild();
-
-  void newFile();
-  bool loadFile(const QString &fileName);
-  bool save();
-  bool saveAs();
-  bool saveFile(const QString &fileName);
-
-  QString userFriendlyCurrentFile();
-  QString currentFile() { return curFile; };
-
-  Entity::Stats getStats() const { return entity_->stats(); };
-
- protected:
-  void closeEvent(QCloseEvent *event);
+  MeshInformationGroupBox(QWidget *parent = 0);
+  ~MeshInformationGroupBox();
+  void reset();
+  void setValues(const Entity::Stats stats);
 
  private:
-  bool maybeSave();
-  void setCurrentFile(const QString &fileName);
-  QString strippedName(const QString &fullFileName);
-
-  Entity *entity_;
-  QString curFile;
-  bool isUntitled;
+  QLabel *num_facets, *num_points;
 };
 
-#endif  // GLMDICHILD_H
+#endif  // MESHINFORMATIONGROUPBOX_H

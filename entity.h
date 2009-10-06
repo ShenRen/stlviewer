@@ -62,8 +62,8 @@ class Entity {
     float         shortest_edge;
     float         volume;
   } Stats;
-  Facet *facets_;
-  Stats stats_;
+  Stats stats() const { return stats_; };
+  Facet* facets() const { return facets_; };
 
  private:
   void initialize(const ::std::string&);
@@ -80,6 +80,8 @@ class Entity {
   void CalculateNormal(float normal[], Facet *facet);
   void NormalizeVector(float v[]);
   ::std::ifstream file_;
+  Facet *facets_;
+  Stats stats_;
 };
 
 #endif  // ENTITY_H

@@ -18,42 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef GLMDICHILD_H
-#define GLMDICHILD_H
+#ifndef DIMENSIONSGROUPBOX_H
+#define DIMENSIONSGROUPBOX_H
 
-#include "glwidget.h"
+#include <QtGui/QGroupBox>
+
 #include "entity.h"
 
-class GLMdiChild : public GLWidget {
+class QLabel;
+
+class DimensionsGroupBox : public QGroupBox {
 
   Q_OBJECT
 
  public:
-  GLMdiChild(QWidget *parent = 0);
-  ~GLMdiChild();
-
-  void newFile();
-  bool loadFile(const QString &fileName);
-  bool save();
-  bool saveAs();
-  bool saveFile(const QString &fileName);
-
-  QString userFriendlyCurrentFile();
-  QString currentFile() { return curFile; };
-
-  Entity::Stats getStats() const { return entity_->stats(); };
-
- protected:
-  void closeEvent(QCloseEvent *event);
+  DimensionsGroupBox(QWidget *parent = 0);
+  ~DimensionsGroupBox();
+  void reset();
+  void setValues(const Entity::Stats stats);
 
  private:
-  bool maybeSave();
-  void setCurrentFile(const QString &fileName);
-  QString strippedName(const QString &fullFileName);
-
-  Entity *entity_;
-  QString curFile;
-  bool isUntitled;
+  QLabel *xMax, *xMin, *xDelta;
+  QLabel *yMax, *yMin, *yDelta;
+  QLabel *zMax, *zMin, *zDelta;
 };
 
-#endif  // GLMDICHILD_H
+#endif  // DIMENSIONSGROUPBOX_H

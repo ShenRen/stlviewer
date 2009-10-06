@@ -165,7 +165,7 @@ void GLWidget::paintGL() {
   glMultMatrixf(panMatrix);
   //glLoadMatrixd(panMatrix);
   //glTranslated(-xPos-xTrans, -yPos-yTrans, -zPos-zTrans);
-  //glTranslated(-xPos, -yPos, -zPos);
+  glTranslated(-xPos, -yPos, -zPos);
   glCallList(object);
   drawAxes();  
 }
@@ -276,23 +276,23 @@ void GLWidget::makeObjectFromEntity(Entity *entity) {
 
   glBegin(GL_TRIANGLES);
 
-  for (int i = 0; i < entity->stats_.num_facets; ++i) {
-    glNormal3d(entity->facets_[i].normal.x, entity->facets_[i].normal.y, entity->facets_[i].normal.z);
-    triangle(entity->facets_[i].vertex[0].x, entity->facets_[i].vertex[0].y, entity->facets_[i].vertex[0].z,
-        entity->facets_[i].vertex[1].x, entity->facets_[i].vertex[1].y, entity->facets_[i].vertex[1].z,
-        entity->facets_[i].vertex[2].x, entity->facets_[i].vertex[2].y, entity->facets_[i].vertex[2].z);
+  for (int i = 0; i < entity->stats().num_facets; ++i) {
+    glNormal3d(entity->facets()[i].normal.x, entity->facets()[i].normal.y, entity->facets()[i].normal.z);
+    triangle(entity->facets()[i].vertex[0].x, entity->facets()[i].vertex[0].y, entity->facets()[i].vertex[0].z,
+        entity->facets()[i].vertex[1].x, entity->facets()[i].vertex[1].y, entity->facets()[i].vertex[1].z,
+        entity->facets()[i].vertex[2].x, entity->facets()[i].vertex[2].y, entity->facets()[i].vertex[2].z);
   }
 
   glEnd();
 
   glEndList();
 
-  xPos = (entity->stats_.max.x+entity->stats_.min.x)/2;
-  yPos = (entity->stats_.max.y+entity->stats_.min.y)/2;
-  zPos = (entity->stats_.max.z+entity->stats_.min.z)/2;
-  zoomDefault_ = qMax(qMax(qAbs(entity->stats_.max.x-entity->stats_.min.x),
-    qAbs(entity->stats_.max.y-entity->stats_.min.y)),
-    qAbs(entity->stats_.max.z-entity->stats_.min.z));
+  xPos = (entity->stats().max.x+entity->stats().min.x)/2;
+  yPos = (entity->stats().max.y+entity->stats().min.y)/2;
+  zPos = (entity->stats().max.z+entity->stats().min.z)/2;
+  zoomDefault_ = qMax(qMax(qAbs(entity->stats().max.x-entity->stats().min.x),
+    qAbs(entity->stats().max.y-entity->stats().min.y)),
+    qAbs(entity->stats().max.z-entity->stats().min.z));
   stepSize_ = zoomDefault_/1000;  
 
   setDefaultCoordinates();

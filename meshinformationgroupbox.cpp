@@ -18,42 +18,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef GLMDICHILD_H
-#define GLMDICHILD_H
+#include <QtGui/QtGui>
 
-#include "glwidget.h"
-#include "entity.h"
+#include "meshinformationgroupbox.h"
 
-class GLMdiChild : public GLWidget {
+MeshInformationGroupBox::MeshInformationGroupBox(QWidget *parent)
+    : QGroupBox(tr("Mesh Information"), parent) {
 
-  Q_OBJECT
+  QGridLayout *layout = new QGridLayout;
 
- public:
-  GLMdiChild(QWidget *parent = 0);
-  ~GLMdiChild();
+  layout->addWidget(new QLabel("# Facets:"), 0, 0);
+  num_facets = new QLabel("");
+  num_facets->setAlignment(Qt::AlignLeft);
+  layout->addWidget(num_facets, 0, 1);
+  layout->addWidget(new QLabel("# Points:"), 1, 0);
+  num_points = new QLabel("");
+  num_points->setAlignment(Qt::AlignLeft);
+  layout->addWidget(num_points, 1, 1);
 
-  void newFile();
-  bool loadFile(const QString &fileName);
-  bool save();
-  bool saveAs();
-  bool saveFile(const QString &fileName);
+  setLayout(layout);
+}
 
-  QString userFriendlyCurrentFile();
-  QString currentFile() { return curFile; };
+MeshInformationGroupBox::~MeshInformationGroupBox() {}
 
-  Entity::Stats getStats() const { return entity_->stats(); };
+void MeshInformationGroupBox::reset() {
+  num_facets->setText("");
+  num_points->setText("");
+}
 
- protected:
-  void closeEvent(QCloseEvent *event);
+void MeshInformationGroupBox::setValues(const Entity::Stats stats) {
+  QString data;
 
- private:
-  bool maybeSave();
-  void setCurrentFile(const QString &fileName);
-  QString strippedName(const QString &fullFileName);
-
-  Entity *entity_;
-  QString curFile;
-  bool isUntitled;
-};
-
-#endif  // GLMDICHILD_H
+  data.setNum(stats.num_facets);
+  num_facets->setText(data);
+  //data.setNum(stats.num_points);
+  //num_points->setText(data);
+}

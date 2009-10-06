@@ -23,8 +23,11 @@
 #include <iostream>
 #include <fstream>
 
-#include "glmdichild.h"
 #include "stlviewer.h"
+#include "glmdichild.h"
+#include "dimensionsgroupbox.h"
+#include "meshinformationgroupbox.h"
+#include "propertiesgroupbox.h"
 
 STLViewer::STLViewer(QWidget *parent, Qt::WFlags flags)
     : QMainWindow(parent, flags) {
@@ -70,28 +73,13 @@ void STLViewer::newFile() {
   child->newFile();
   child->show();
 
-  xMax->setText("");
-  xMin->setText("");
-  xDelta->setText("");
-
-  yMax->setText("");
-  yMin->setText("");
-  yDelta->setText("");
-
-  zMax->setText("");
-  zMin->setText("");
-  zDelta->setText("");
-
-  num_facets->setText("");
-  num_points->setText("");
-
-  volume->setText("");
-  surface->setText("");
+  dimensionsGroupBox->reset();
+  meshInformationGroupBox->reset();
+  propertiesGroupBox->reset();
 }
 
 void STLViewer::open() {
-  QString fileName = QFileDialog::getOpenFileName(this);
-  //QString fileName = QFileDialog::getOpenFileName(this, tr("Open a file"), QString(), tr("STL Files (*.stl);;All Files (*.*)"));
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open a file"), QString(), tr("STL Files (*.stl);;All Files (*.*)"));
   if (!fileName.isEmpty()) {
     QMdiSubWindow *existing = findGLMdiChild(fileName);
     if (existing) {
@@ -119,26 +107,42 @@ void STLViewer::saveAs() {
 }
 
 void STLViewer::rotate() {
+  QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+  separatorAct->setVisible(!windows.isEmpty());
   if (rotateAct->isChecked()) {
     rotateAct->setChecked(true);
     translateAct->setChecked(false);
-    activeGLMdiChild()->setRotationMode(true);
-    activeGLMdiChild()->setTranslationMode(false);
+    for (int i = 0; i < windows.size(); ++i) {
+      GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
+      child->setRotationMode(true);
+      child->setTranslationMode(false);
+    }
   } else {
     rotateAct->setChecked(false);
-    activeGLMdiChild()->setRotationMode(false);
+    for (int i = 0; i < windows.size(); ++i) {
+      GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
+      child->setRotationMode(false);
+    }
   }
 }
 
 void STLViewer::translate() {
+  QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+  separatorAct->setVisible(!windows.isEmpty());
   if (translateAct->isChecked()) {
     translateAct->setChecked(true);
     rotateAct->setChecked(false);
-    activeGLMdiChild()->setTranslationMode(true);
-    activeGLMdiChild()->setRotationMode(false);
+    for (int i = 0; i < windows.size(); ++i) {
+      GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
+      child->setTranslationMode(true);
+      child->setRotationMode(false);
+    }
   } else {
     translateAct->setChecked(false);
-    activeGLMdiChild()->setTranslationMode(false);
+    for (int i = 0; i < windows.size(); ++i) {
+      GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
+      child->setTranslationMode(false);
+    }
   }
 }
 
@@ -165,6 +169,15 @@ void STLViewer::updateMenus() {
   nextAct->setEnabled(hasGLMdiChild);
   previousAct->setEnabled(hasGLMdiChild);
   separatorAct->setVisible(hasGLMdiChild);
+  if (hasGLMdiChild) {
+    dimensionsGroupBox->setValues(activeGLMdiChild()->getStats());
+    meshInformationGroupBox->setValues(activeGLMdiChild()->getStats());
+    propertiesGroupBox->setValues(activeGLMdiChild()->getStats());
+  } else {
+    dimensionsGroupBox->reset();
+    meshInformationGroupBox->reset();
+    propertiesGroupBox->reset();
+  }
 }
 
 void STLViewer::updateWindowMenu() {
@@ -377,9 +390,9 @@ void STLViewer::createDockWindows() {
   QDockWidget *dock = new QDockWidget(tr("Informations"), this);
   dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
 
-  createDimensionsGroupBox();
-  createMeshInformationGroupBox();
-  createPropertiesGroupBox();
+  dimensionsGroupBox = new DimensionsGroupBox(this);
+  meshInformationGroupBox = new MeshInformationGroupBox(this);
+  propertiesGroupBox = new PropertiesGroupBox(this);
 
   QWidget *wi = new QWidget;
   QVBoxLayout *layout = new QVBoxLayout;
@@ -396,93 +409,3 @@ void STLViewer::createDockWindows() {
   viewMenu->addAction(dock->toggleViewAction());
 }
 
-void STLViewer::createDimensionsGroupBox() {
-  dimensionsGroupBox = new QGroupBox(tr("Dimensions"), this);
-
-  QGridLayout *layout = new QGridLayout;
-
-  QLabel *label = new QLabel("Min");
-  label->setAlignment(Qt::AlignHCenter);
-  layout->addWidget(label, 0, 1);
-  label = new QLabel("Max");
-  label->setAlignment(Qt::AlignHCenter);
-  layout->addWidget(label, 0, 2);
-  label = new QLabel("Delta");
-  label->setAlignment(Qt::AlignHCenter);
-  layout->addWidget(label, 0, 3);
-  layout->addWidget(new QLabel("X"), 1, 0);
-  xMin = new QLabel("");
-  xMin->setAlignment(Qt::AlignRight);
-  layout->addWidget(xMin, 1, 1);
-  xMax = new QLabel("");
-  xMax->setAlignment(Qt::AlignRight);
-  layout->addWidget(xMax, 1, 2);
-  xDelta = new QLabel("");
-  xDelta->setAlignment(Qt::AlignRight);
-  layout->addWidget(xDelta, 1, 3);
-  layout->addWidget(new QLabel("Y"), 2, 0);
-  yMin = new QLabel("");
-  yMin->setAlignment(Qt::AlignRight);
-  layout->addWidget(yMin, 2, 1);
-  yMax = new QLabel("");
-  yMax->setAlignment(Qt::AlignRight);
-  layout->addWidget(yMax, 2, 2);
-  yDelta = new QLabel("");
-  yDelta->setAlignment(Qt::AlignRight);
-  layout->addWidget(yDelta, 2, 3);
-  layout->addWidget(new QLabel("Z"), 3, 0);
-  zMin = new QLabel("");
-  zMin->setAlignment(Qt::AlignRight);
-  layout->addWidget(zMin, 3, 1);
-  zMax = new QLabel("");
-  zMax->setAlignment(Qt::AlignRight);
-  layout->addWidget(zMax, 3, 2);
-  zDelta = new QLabel("");
-  zDelta->setAlignment(Qt::AlignRight);
-  layout->addWidget(zDelta, 3, 3);
-
-  layout->addWidget(new QLabel("mm"), 1, 4);
-  layout->addWidget(new QLabel("mm"), 2, 4);
-  layout->addWidget(new QLabel("mm"), 3, 4);
-
-  layout->setColumnMinimumWidth(0, 20);
-  layout->setColumnMinimumWidth(1, 50);
-  layout->setColumnMinimumWidth(2, 50);
-  layout->setColumnMinimumWidth(3, 50);
-
-  dimensionsGroupBox->setLayout(layout);
-}
-
-void STLViewer::createMeshInformationGroupBox() {
-  meshInformationGroupBox = new QGroupBox(tr("Infos maillage"), this);
-  QGridLayout *layout = new QGridLayout;
-
-  layout->addWidget(new QLabel("# Facettes:"), 0, 0);
-  num_facets = new QLabel("");
-  num_facets->setAlignment(Qt::AlignLeft);
-  layout->addWidget(num_facets, 0, 1);
-  layout->addWidget(new QLabel("# Points:"), 1, 0);
-  num_points = new QLabel("");
-  num_points->setAlignment(Qt::AlignLeft);
-  layout->addWidget(num_points, 1, 1);
-
-  meshInformationGroupBox->setLayout(layout);
-}
-
-void STLViewer::createPropertiesGroupBox() {
-  propertiesGroupBox = new QGroupBox(tr("Propriétés"), this);
-  QGridLayout *layout = new QGridLayout;
-
-  layout->addWidget(new QLabel("Volume:"), 0, 0);
-  volume = new QLabel("");
-  volume->setAlignment(Qt::AlignRight);
-  layout->addWidget(volume, 0, 1);
-  layout->addWidget(new QLabel("Surface:"), 1, 0);
-  surface = new QLabel("");
-  surface->setAlignment(Qt::AlignRight);
-  layout->addWidget(surface, 1, 1);
-  layout->addWidget(new QLabel("mm^3"), 0, 2);
-  layout->addWidget(new QLabel("mm^3"), 1, 2);
-
-  propertiesGroupBox->setLayout(layout);
-}
