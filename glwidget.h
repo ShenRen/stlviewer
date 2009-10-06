@@ -24,8 +24,10 @@
 #include <QtOpenGL/QGLWidget>
 
 class Entity;
+class MdiChild;
 
 class GLWidget : public QGLWidget {
+
   Q_OBJECT
 
  public:

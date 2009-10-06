@@ -23,43 +23,53 @@
 #include <iostream>
 #include <fstream>
 
-#include "glwidget.h"
+#include "glmdichild.h"
 #include "stlviewer.h"
 
 STLViewer::STLViewer(QWidget *parent, Qt::WFlags flags)
     : QMainWindow(parent, flags) {
 
-  glWidget = new GLWidget;
-  setCentralWidget(glWidget);
+  mdiArea = new QMdiArea;
+  mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  setCentralWidget(mdiArea);
 
-  entity_ = new Entity;
+  connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)),
+       this, SLOT(updateMenus()));
+  windowMapper = new QSignalMapper(this);
+  connect(windowMapper, SIGNAL(mapped(QWidget *)),
+       this, SLOT(setActiveSubWindow(QWidget *)));
 
   createActions();
   createMenus();
   createToolBars();
   createStatusBar();
   createDockWindows();
+  updateMenus();
 
   readSettings();
 
-  setCurrentFile("");
+  setWindowTitle(tr("STLViewer"));
   setUnifiedTitleAndToolBarOnMac(true);
 }
 
-STLViewer::~STLViewer() {
-  delete entity_;
-}
+STLViewer::~STLViewer() {}
 
 void STLViewer::closeEvent(QCloseEvent *event) {
-  writeSettings();
-  entity_->close();
-  event->accept();
+  mdiArea->closeAllSubWindows();
+  if (activeGLMdiChild()) {
+    event->ignore();
+  } else {
+    writeSettings();
+    event->accept();
+  }
 }
 
 void STLViewer::newFile() {
-  entity_->close();
-  setCurrentFile(QString("untitled.stl"));
-  glWidget->deleteObject();
+  GLMdiChild *child = createGLMdiChild();
+  child->newFile();
+  child->show();
+
   xMax->setText("");
   xMin->setText("");
   xDelta->setText("");
@@ -80,35 +90,43 @@ void STLViewer::newFile() {
 }
 
 void STLViewer::open() {
-  QString fileName = QFileDialog::getOpenFileName(this, tr("Ouvrir un fichier"), QString(), tr("STL Files (*.stl);;Tous les fichiers (*.*)"));
-  if (!fileName.isEmpty())
-    loadFile(fileName);
-}
-
-bool STLViewer::save() {
-  if (curFile.isEmpty()) {
-    return saveAs();
-  } else {
-    return saveFile(curFile);
+  QString fileName = QFileDialog::getOpenFileName(this);
+  //QString fileName = QFileDialog::getOpenFileName(this, tr("Open a file"), QString(), tr("STL Files (*.stl);;All Files (*.*)"));
+  if (!fileName.isEmpty()) {
+    QMdiSubWindow *existing = findGLMdiChild(fileName);
+    if (existing) {
+      mdiArea->setActiveSubWindow(existing);
+      return;
+    }
+    GLMdiChild *child = createGLMdiChild();
+    if (child->loadFile(fileName)) {
+      statusBar()->showMessage(tr("File loaded"), 2000);
+      child->show();
+    } else {
+      child->close();
+    }
   }
 }
 
-bool STLViewer::saveAs() {
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Enregistrer un fichier"), QString(), tr("STL Files (*.stl);;Tous les fichiers (*.*)"));
-  if (fileName.isEmpty())
-    return false;
-  return saveFile(fileName);
+void STLViewer::save() {
+  if (activeGLMdiChild() && activeGLMdiChild()->save())
+    statusBar()->showMessage(tr("File saved"), 2000);
+}
+
+void STLViewer::saveAs() {
+  if (activeGLMdiChild() && activeGLMdiChild()->saveAs())
+    statusBar()->showMessage(tr("File saved"), 2000);
 }
 
 void STLViewer::rotate() {
   if (rotateAct->isChecked()) {
     rotateAct->setChecked(true);
     translateAct->setChecked(false);
-    glWidget->setRotationMode(true);
-    glWidget->setTranslationMode(false);
+    activeGLMdiChild()->setRotationMode(true);
+    activeGLMdiChild()->setTranslationMode(false);
   } else {
     rotateAct->setChecked(false);
-    glWidget->setRotationMode(false);
+    activeGLMdiChild()->setRotationMode(false);
   }
 }
 
@@ -116,46 +134,134 @@ void STLViewer::translate() {
   if (translateAct->isChecked()) {
     translateAct->setChecked(true);
     rotateAct->setChecked(false);
-    glWidget->setTranslationMode(true);
-    glWidget->setRotationMode(false);
+    activeGLMdiChild()->setTranslationMode(true);
+    activeGLMdiChild()->setRotationMode(false);
   } else {
     translateAct->setChecked(false);
-    glWidget->setTranslationMode(false);
+    activeGLMdiChild()->setTranslationMode(false);
   }
 }
 
 void STLViewer::zoom() {}
 
 void STLViewer::home() {
-  glWidget->setDefaultCoordinates();
+  activeGLMdiChild()->setDefaultCoordinates();
 }
 
 void STLViewer::about() {
-  QMessageBox::about(this, tr("A propos"),
+  QMessageBox::about(this, tr("About STLViewer"),
           tr("<b>STLViewer</b> simule la visualisation de la tête fémorale "
              "par une caméra endoscopique mobile."));
 }
 
+void STLViewer::updateMenus() {
+  bool hasGLMdiChild = (activeGLMdiChild() != 0);
+  saveAct->setEnabled(hasGLMdiChild);
+  saveAsAct->setEnabled(hasGLMdiChild);
+  closeAct->setEnabled(hasGLMdiChild);
+  closeAllAct->setEnabled(hasGLMdiChild);
+  tileAct->setEnabled(hasGLMdiChild);
+  cascadeAct->setEnabled(hasGLMdiChild);
+  nextAct->setEnabled(hasGLMdiChild);
+  previousAct->setEnabled(hasGLMdiChild);
+  separatorAct->setVisible(hasGLMdiChild);
+}
+
+void STLViewer::updateWindowMenu() {
+  windowMenu->clear();
+  windowMenu->addAction(closeAct);
+  windowMenu->addAction(closeAllAct);
+  windowMenu->addSeparator();
+  windowMenu->addAction(tileAct);
+  windowMenu->addAction(cascadeAct);
+  windowMenu->addSeparator();
+  windowMenu->addAction(nextAct);
+  windowMenu->addAction(previousAct);
+  windowMenu->addAction(separatorAct);
+
+  QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
+  separatorAct->setVisible(!windows.isEmpty());
+
+  for (int i = 0; i < windows.size(); ++i) {
+    GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
+
+    QString text;
+    if (i < 9) {
+      text = tr("&%1 %2").arg(i + 1).arg(child->userFriendlyCurrentFile());
+    } else {
+      text = tr("%1 %2").arg(i + 1).arg(child->userFriendlyCurrentFile());
+    }
+    QAction *action  = windowMenu->addAction(text);
+    action->setCheckable(true);
+    action ->setChecked(child == activeGLMdiChild());
+    connect(action, SIGNAL(triggered()), windowMapper, SLOT(map()));
+    windowMapper->setMapping(action, windows.at(i));
+  }
+}
+
+GLMdiChild *STLViewer::createGLMdiChild() {
+  GLMdiChild *child = new GLMdiChild;
+  mdiArea->addSubWindow(child);
+
+  return child;
+}
+
 void STLViewer::createActions() {
-  newAct = new QAction(QIcon(":STLViewer/Images/page_white.png"), tr("&Nouveau..."), this);
+
+  newAct = new QAction(QIcon(":STLViewer/Images/page_white.png"), tr("&New"), this);
   newAct->setShortcuts(QKeySequence::New);
-  newAct->setStatusTip(tr("Créer un fichier"));
+  newAct->setStatusTip(tr("Create a new file"));
   connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
-  openAct = new QAction(QIcon(":STLViewer/Images/folder.png"), tr("&Ouvrir..."), this);
+  openAct = new QAction(QIcon(":STLViewer/Images/folder.png"), tr("&Open..."), this);
   openAct->setShortcuts(QKeySequence::Open);
-  openAct->setStatusTip(tr("Ouvrir un fichier..."));
+  openAct->setStatusTip(tr("Open an existing file"));
   connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-  saveAct = new QAction(QIcon(":STLViewer/Images/disk.png"), tr("&Enregistrer"), this);
+  saveAct = new QAction(QIcon(":STLViewer/Images/disk.png"), tr("&Save"), this);
   saveAct->setShortcuts(QKeySequence::Save);
-  saveAct->setStatusTip(tr("Enregistrer le fichier"));
+  saveAct->setStatusTip(tr("Save the document to disk"));
   connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
-  saveAsAct = new QAction(tr("&Enregistrer sous..."), this);
+  saveAsAct = new QAction(tr("Save &As..."), this);
   saveAsAct->setShortcut(QKeySequence::SaveAs);
-  saveAsAct->setStatusTip(tr("Enregistrer le fichier sous..."));
+  saveAsAct->setStatusTip(tr("Save the document under a new name"));
   connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
+
+  closeAct = new QAction(tr("Cl&ose"), this);
+  closeAct->setShortcut(tr("Ctrl+F4"));
+  closeAct->setStatusTip(tr("Close the active window"));
+  connect(closeAct, SIGNAL(triggered()),
+    mdiArea, SLOT(closeActiveSubWindow()));
+
+  closeAllAct = new QAction(tr("Close &All"), this);
+  closeAllAct->setStatusTip(tr("Close all the windows"));
+  connect(closeAllAct, SIGNAL(triggered()),
+    mdiArea, SLOT(closeAllSubWindows()));
+
+  tileAct = new QAction(tr("&Tile"), this);
+  tileAct->setStatusTip(tr("Tile the windows"));
+  connect(tileAct, SIGNAL(triggered()), mdiArea, SLOT(tileSubWindows()));
+
+  cascadeAct = new QAction(tr("&Cascade"), this);
+  cascadeAct->setStatusTip(tr("Cascade the windows"));
+  connect(cascadeAct, SIGNAL(triggered()), mdiArea, SLOT(cascadeSubWindows()));
+
+  nextAct = new QAction(tr("Ne&xt"), this);
+  nextAct->setShortcuts(QKeySequence::NextChild);
+  nextAct->setStatusTip(tr("Move the focus to the next window"));
+  connect(nextAct, SIGNAL(triggered()),
+      mdiArea, SLOT(activateNextSubWindow()));
+
+  previousAct = new QAction(tr("Pre&vious"), this);
+  previousAct->setShortcuts(QKeySequence::PreviousChild);
+  previousAct->setStatusTip(tr("Move the focus to the previous "
+      "window"));
+  connect(previousAct, SIGNAL(triggered()),
+      mdiArea, SLOT(activatePreviousSubWindow()));
+
+  separatorAct = new QAction(this);
+  separatorAct->setSeparator(true);
 
   rotateAct = new QAction(QIcon(":STLViewer/Images/arrow_rotate_clockwise.png"), tr("&Rotation"), this);
   rotateAct->setStatusTip(tr("Effectuer une rotation"));
@@ -177,18 +283,18 @@ void STLViewer::createActions() {
   homeAct->setStatusTip(tr("Zoom par défaut"));
   connect(homeAct, SIGNAL(triggered()), this, SLOT(home()));
 
-  exitAct = new QAction(tr("Quitter"), this);
+  exitAct = new QAction(tr("E&xit"), this);
   exitAct->setShortcut(tr("Ctrl+Q"));
-  exitAct->setStatusTip(tr("Quitter l'application"));
-  connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+  exitAct->setStatusTip(tr("Exit the application"));
+  connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
 
-  aboutAct = new QAction(tr("&A propos"), this);
-  aboutAct->setStatusTip(tr("A propos de STLViewer"));
+  aboutAct = new QAction(tr("&About"), this);
+  aboutAct->setStatusTip(tr("About STLViewer"));
   connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 }
 
 void STLViewer::createMenus() {
-  fileMenu = menuBar()->addMenu(tr("&Fichier"));
+  fileMenu = menuBar()->addMenu(tr("&File"));
   fileMenu->addAction(newAct);
   fileMenu->addAction(openAct);
   fileMenu->addAction(saveAct);
@@ -196,26 +302,30 @@ void STLViewer::createMenus() {
   fileMenu->addSeparator();
   fileMenu->addAction(exitAct);
 
-  viewMenu = menuBar()->addMenu(tr("&Affichage"));
+  viewMenu = menuBar()->addMenu(tr("&View"));
   viewMenu->addAction(rotateAct);
   viewMenu->addAction(translateAct);
   viewMenu->addAction(zoomAct);
   viewMenu->addAction(homeAct);
   viewMenu->addSeparator();
 
+  windowMenu = menuBar()->addMenu(tr("&Window"));
+  updateWindowMenu();
+  connect(windowMenu, SIGNAL(aboutToShow()), this, SLOT(updateWindowMenu()));
+
   menuBar()->addSeparator();
 
-  helpMenu = menuBar()->addMenu(tr("&Aide"));
+  helpMenu = menuBar()->addMenu(tr("&Help"));
   helpMenu->addAction(aboutAct);
 }
 
 void STLViewer::createToolBars() {
-  fileToolBar = addToolBar(tr("Fichier"));
+  fileToolBar = addToolBar(tr("File"));
   fileToolBar->addAction(newAct);
   fileToolBar->addAction(openAct);
   fileToolBar->addAction(saveAct);
 
-  viewToolBar = addToolBar(tr("Affichage"));
+  viewToolBar = addToolBar(tr("View"));
   viewToolBar->addAction(rotateAct);
   viewToolBar->addAction(translateAct);
   viewToolBar->addAction(zoomAct);
@@ -223,11 +333,11 @@ void STLViewer::createToolBars() {
 }
 
 void STLViewer::createStatusBar() {
-  statusBar()->showMessage(tr("Prêt"));
+  statusBar()->showMessage(tr("Ready"));
 }
 
 void STLViewer::readSettings() {
-  QSettings settings("Surgiqual", "STLViewer");
+  QSettings settings("Cravesoft", "STLViewer");
   QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
   QSize size = settings.value("size", QSize(400, 400)).toSize();
   resize(size);
@@ -235,81 +345,32 @@ void STLViewer::readSettings() {
 }
 
 void STLViewer::writeSettings() {
-  QSettings settings("Surgiqual", "STLViewer");
+  QSettings settings("Cravesoft", "STLViewer");
   settings.setValue("pos", pos());
   settings.setValue("size", size());
 }
 
-void STLViewer::loadFile(const QString &fileName) {
-  entity_->close();
-  glWidget->deleteObject();
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  entity_->open(fileName.toStdString());
-  glWidget->makeObjectFromEntity(entity_);
-  QApplication::restoreOverrideCursor();
-
-  QString data;
-
-  data.setNum(entity_->stats_.max.x);
-  xMax->setText(data);
-  data.setNum(entity_->stats_.min.x);
-  xMin->setText(data);
-  data.setNum(entity_->stats_.max.x-entity_->stats_.min.x);
-  xDelta->setText(data);
-
-  data.setNum(entity_->stats_.max.y);
-  yMax->setText(data);
-  data.setNum(entity_->stats_.min.y);
-  yMin->setText(data);
-  data.setNum(entity_->stats_.max.y-entity_->stats_.min.y);
-  yDelta->setText(data);
-
-  data.setNum(entity_->stats_.max.z);
-  zMax->setText(data);
-  data.setNum(entity_->stats_.min.z);
-  zMin->setText(data);
-  data.setNum(entity_->stats_.max.z-entity_->stats_.min.z);
-  zDelta->setText(data);
-
-  data.setNum(entity_->stats_.num_facets);
-  num_facets->setText(data);
-  //data.setNum(entity_->stats_.num_points);
-  //num_points->setText(data);
-
-  data.setNum(entity_->stats_.volume);
-  volume->setText(data);
-  //data.setNum(entity_->stats_.surface);
-  //surface->setText(data);
-
-  glWidget->updateGL();
-  setCurrentFile(fileName);
-  statusBar()->showMessage(tr("Fichier chargé"), 2000);
+GLMdiChild *STLViewer::activeGLMdiChild() {
+  if (QMdiSubWindow *activeSubWindow = mdiArea->activeSubWindow())
+    return qobject_cast<GLMdiChild *>(activeSubWindow->widget());
+  return 0;
 }
 
-bool STLViewer::saveFile(const QString &fileName) {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  entity_->write(fileName.toStdString());
-  QApplication::restoreOverrideCursor();
-  setCurrentFile(fileName);
-  statusBar()->showMessage(tr("Fichier sauvé"), 2000);
-  return true;
+QMdiSubWindow *STLViewer::findGLMdiChild(const QString &fileName) {
+  QString canonicalFilePath = QFileInfo(fileName).canonicalFilePath();
+
+  foreach (QMdiSubWindow *window, mdiArea->subWindowList()) {
+    GLMdiChild *glMdiChild = qobject_cast<GLMdiChild *>(window->widget());
+    if (glMdiChild->currentFile() == canonicalFilePath)
+      return window;
+  }
+  return 0;
 }
 
-void STLViewer::setCurrentFile(const QString &fileName) {
-  curFile = fileName;
-  setWindowModified(false);
-
-  QString shownName;
-  if (curFile.isEmpty())
-    shownName = "untitled.stl";
-  else
-    shownName = strippedName(curFile);
-
-  setWindowTitle(tr("%1[*] - %2").arg(shownName).arg(tr("STLViewer")));
-}
-
-QString STLViewer::strippedName(const QString &fullFileName) {
-  return QFileInfo(fullFileName).fileName();
+void STLViewer::setActiveSubWindow(QWidget *window) {
+  if (!window)
+    return;
+  mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
 }
 
 void STLViewer::createDockWindows() {
