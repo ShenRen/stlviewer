@@ -75,7 +75,7 @@ class GLWidget : public QGLWidget {
   void drawAxes();
   void updateCursor();
 
-  GLfloat panMatrix[16];
+  //GLfloat panMatrix[16];
   GLuint object;
   bool rotationMode;
   bool translationMode;

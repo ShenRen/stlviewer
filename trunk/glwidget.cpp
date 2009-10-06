@@ -24,8 +24,7 @@
 #include "glwidget.h"
 #include "entity.h"
 
-GLWidget::GLWidget(QWidget *parent)
-    : QGLWidget(parent) {
+GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent) {
   object = 0;
   xRot = yRot = zRot = 0;
   xPos= yPos= zPos= 0;
@@ -104,11 +103,11 @@ void GLWidget::setDefaultCoordinates() {
   xRot = yRot = zRot = 0;
   xTrans = yTrans = zTrans = 0;
   zoom_ = zoomDefault_;
-  glMatrixMode(GL_MODELVIEW);
-  glPushMatrix();
-  glLoadIdentity();
-  glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
-  glPopMatrix();
+  //glMatrixMode(GL_MODELVIEW);
+  //glPushMatrix();
+  //glLoadIdentity();
+  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
+  //glPopMatrix();
   updateGL();
 }
 
@@ -162,7 +161,7 @@ void GLWidget::paintGL() {
   glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
   glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
   glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-  glMultMatrixf(panMatrix);
+  //glMultMatrixf(panMatrix);
   //glLoadMatrixd(panMatrix);
   //glTranslated(-xPos-xTrans, -yPos-yTrans, -zPos-zTrans);
   glTranslated(-xPos, -yPos, -zPos);
@@ -222,23 +221,23 @@ void GLWidget::mousePressEvent(QMouseEvent *event) {
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
   updateCursor();
-  if (event->button() & Qt::MidButton || (event->button() & Qt::MidButton && translationMode)) {
+  //if (event->button() & Qt::MidButton || (event->button() & Qt::MidButton && translationMode)) {
 
-    glMatrixMode(GL_MODELVIEW);
-    glPushMatrix();
-    glLoadIdentity();
-    glTranslated(-xTrans, -yTrans, -zTrans);
-    glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
-    glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
-    glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-    glMultMatrixf(panMatrix);
-    glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
-    glPopMatrix();
+  //  //glMatrixMode(GL_MODELVIEW);
+  //  //glPushMatrix();
+  //  //glLoadIdentity();
+  //  //glTranslated(-xTrans, -yTrans, -zTrans);
+  //  //glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
+  //  //glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
+  //  //glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
+  //  //glMultMatrixf(panMatrix);
+  //  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
+  //  //glPopMatrix();
 
-    xRot = yRot = zRot = 0;
-    xTrans = yTrans = zTrans = 0;
-    updateGL();
-  }
+  //  /*xRot = yRot = zRot = 0;
+  //  xTrans = yTrans = zTrans = 0;*/
+  //  updateGL();
+  //}
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event) {
