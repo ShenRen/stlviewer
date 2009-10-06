@@ -24,14 +24,14 @@
 #include <QtGui/QMainWindow>
 #include <QtGui/QWidget>
 
-#include "entity.h"
-
-class Entity;
+class GLMdiChild;
 class QAction;
 class QMenu;
-class GLWidget;
 class QGroupBox;
 class QLabel;
+class QMdiArea;
+class QMdiSubWindow;
+class QSignalMapper;
 
 class STLViewer : public QMainWindow {
 
@@ -47,14 +47,17 @@ class STLViewer : public QMainWindow {
  private slots:
   void newFile();  
   void open();
-  bool save();
-  bool saveAs();
+  void save();
+  void saveAs();
   void rotate();
   void translate();
   void zoom();
   void home();
-
   void about();
+  void updateMenus();
+  void updateWindowMenu();
+  GLMdiChild *createGLMdiChild();
+  void setActiveSubWindow(QWidget *window);
 
  private:
 
@@ -68,15 +71,15 @@ class STLViewer : public QMainWindow {
   void createPropertiesGroupBox();
   void readSettings();
   void writeSettings();
-  void loadFile(const QString &fileName);
-  bool saveFile(const QString &fileName);
-  void setCurrentFile(const QString &fileName);
-  QString strippedName(const QString &fullFileName);
 
-  QString curFile;
-  Entity *entity_;
-  GLWidget *glWidget;
+  GLMdiChild *activeGLMdiChild();
+  QMdiSubWindow *findGLMdiChild(const QString &fileName);
+
+  QMdiArea *mdiArea;
+  QSignalMapper *windowMapper;
+
   QMenu *fileMenu;
+  QMenu *windowMenu;
   QMenu *viewMenu;
   QMenu *helpMenu;
   QToolBar *fileToolBar;
@@ -85,6 +88,13 @@ class STLViewer : public QMainWindow {
   QAction *openAct;
   QAction *saveAct;
   QAction *saveAsAct;
+  QAction *closeAct;
+  QAction *closeAllAct;
+  QAction *tileAct;
+  QAction *cascadeAct;
+  QAction *nextAct;
+  QAction *previousAct;
+  QAction *separatorAct;
   QAction *zoomAct;
   QAction *rotateAct;
   QAction *translateAct;

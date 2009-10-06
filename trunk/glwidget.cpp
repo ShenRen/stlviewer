@@ -100,6 +100,7 @@ void GLWidget::setZRotation(int angle) {
 }
 
 void GLWidget::setDefaultCoordinates() {
+  makeCurrent();
   xRot = yRot = zRot = 0;
   xTrans = yTrans = zTrans = 0;
   zoom_ = zoomDefault_;
@@ -164,7 +165,6 @@ void GLWidget::paintGL() {
   glMultMatrixf(panMatrix);
   //glLoadMatrixd(panMatrix);
   //glTranslated(-xPos-xTrans, -yPos-yTrans, -zPos-zTrans);
-  glTranslated(-xPos, -yPos, -zPos);
   //glTranslated(-xPos, -yPos, -zPos);
   glCallList(object);
   drawAxes();  
@@ -270,6 +270,7 @@ void GLWidget::wheelEvent(QWheelEvent *event) {
 }
 
 void GLWidget::makeObjectFromEntity(Entity *entity) {
+  makeCurrent();
   object = glGenLists(1);
   glNewList(object, GL_COMPILE);
 
