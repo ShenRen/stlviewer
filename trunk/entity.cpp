@@ -32,7 +32,7 @@
 #define ASCII_LINES_PER_FACET 7
 
 Entity::Entity() {
-  facets_ = NULL;
+  facets_ = 0;
 }
 
 Entity::~Entity() {
@@ -47,7 +47,7 @@ void Entity::open(const ::std::string& file_name) {
 }
 
 void Entity::write(const ::std::string& file_name) {
-  if (facets_ != NULL) {
+  if (facets_ != 0) {
     if (stats_.type == ASCII)
       writeAscii(file_name);
     else
@@ -63,7 +63,7 @@ void Entity::initialize(const ::std::string& file_name) {
 
   stats_.num_facets = 0;
   stats_.volume = -1.0;
-  facets_ = NULL;
+  facets_ = 0;
 
   // Open the file
   file_.open(file_name.c_str(), ::std::ios::in|::std::ios::binary);
@@ -134,7 +134,7 @@ void Entity::initialize(const ::std::string& file_name) {
 void Entity::allocate() {
   //  Allocate memory for the entire .STL file
   facets_ = new Facet[stats_.num_facets];
-  if (facets_ == NULL)
+  if (facets_ == 0)
     ::std::cerr << "Problem allocating memory" << ::std::endl;
 }
 
@@ -232,9 +232,9 @@ void Entity::readData(int first_facet, int first) {
 
 
 void Entity::close() {
-  if (facets_ != NULL) {
+  if (facets_ != 0) {
 	  delete[] facets_;
-    facets_ = NULL;
+    facets_ = 0;
   }
 }
 
