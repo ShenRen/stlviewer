@@ -29,12 +29,18 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent) {
   xRot = yRot = zRot = 0;
   xPos= yPos= zPos= 0;
   xTrans= yTrans= zTrans= 0;
-  zoomDefault_ = zoom_ = 1.0;
-  stepSize_ = 0;
+  defaultZoomFactor = zoomFactor = 1.0;
+  zoomInc = 0;
   rotationMode = false;
   translationMode = false;
-
+  left = -1;
+  right = 1;
+  bottom = -1;
+  top = 1;
+  zNear = -1500000;
+  zFar = 1500000;
   grey = QColor::fromRgbF(0.6, 0.6, 0.6);
+  black = QColor::fromRgbF(0.0, 0.0, 0.0);
   purple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
 }
 
@@ -98,20 +104,7 @@ void GLWidget::setZRotation(int angle) {
   }
 }
 
-void GLWidget::setDefaultCoordinates() {
-  makeCurrent();
-  xRot = yRot = zRot = 0;
-  xTrans = yTrans = zTrans = 0;
-  zoom_ = zoomDefault_;
-  //glMatrixMode(GL_MODELVIEW);
-  //glPushMatrix();
-  //glLoadIdentity();
-  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
-  //glPopMatrix();
-  updateGL();
-}
-
-void GLWidget::setXTranslation(int distance) {
+void GLWidget::setXTranslation(float distance) {
   if (distance != xTrans) {
     xTrans = distance;
     emit xTranslationChanged(distance);
@@ -119,7 +112,7 @@ void GLWidget::setXTranslation(int distance) {
   }
 }
 
-void GLWidget::setYTranslation(int distance) {
+void GLWidget::setYTranslation(float distance) {
   if (distance != yTrans) {
     yTrans = distance;
     emit yTranslationChanged(distance);
@@ -128,13 +121,27 @@ void GLWidget::setYTranslation(int distance) {
 }
 
 void GLWidget::setZoom(float zoom) {
-  if (zoom != zoom_) {
-    zoom_ = zoom;
+  if (zoom != zoomFactor) {
+    zoomFactor = zoom;
     if (zoom <= 0)
-      zoom_ = 0.001;
+      zoomFactor = 0.001;
+    zoomInc = zoomFactor/1000;
     emit zoomChanged(zoom);
     updateGL();
   }
+}
+
+void GLWidget::setDefaultCoordinates() {
+  makeCurrent();
+  xRot = yRot = zRot = 0;
+  xTrans = yTrans = zTrans = 0;
+  zoomFactor = defaultZoomFactor;
+  //glMatrixMode(GL_MODELVIEW);
+  //glPushMatrix();
+  //glLoadIdentity();
+  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
+  //glPopMatrix();
+  updateGL();
 }
 
 void GLWidget::initializeGL() {
@@ -151,12 +158,18 @@ void GLWidget::initializeGL() {
 void GLWidget::paintGL() {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  //glOrtho(-300/zoom_, +300/zoom_, +300/zoom_, -300/zoom_, -1500000, 1500000);
-  glOrtho(-zoom_, +zoom_, +zoom_, -zoom_, -zoomDefault_, zoomDefault_);
+  glOrtho(left*zoomFactor, right*zoomFactor, bottom*zoomFactor, top*zoomFactor, zNear, zFar);
   glMatrixMode(GL_MODELVIEW);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
-  //gluLookAt(zoom_, zoom_, zoom_, xPos, yPos, zPos, 0, 1, 0);
+  //gluLookAt(zoomFactor, zoomFactor, zoomFactor, xPos, yPos, zPos, 0, 1, 0);
+  glPushMatrix();
+  glTranslated(zoomFactor-zoomFactor/4, -zoomFactor+zoomFactor/5, 0.0f);
+  glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
+  glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
+  glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
+  drawAxes();
+  glPopMatrix();
   glTranslated(-xTrans, -yTrans, -zTrans);
   glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
   glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
@@ -165,8 +178,20 @@ void GLWidget::paintGL() {
   //glLoadMatrixd(panMatrix);
   //glTranslated(-xPos-xTrans, -yPos-yTrans, -zPos-zTrans);
   glTranslated(-xPos, -yPos, -zPos);
+
+  glPolygonMode(GL_BACK, GL_FILL);
+	glCullFace(GL_BACK);
+  qglColor(grey);
   glCallList(object);
-  drawAxes();  
+
+  glCullFace(GL_FRONT);
+  qglColor(black);
+	glPolygonMode(GL_BACK, GL_LINE);
+  glCallList(object);
+	glPolygonMode(GL_BACK, GL_FILL);
+	glCullFace(GL_BACK);
+
+  drawAxes();
 }
 
 void GLWidget::resizeGL(int width, int height) {
@@ -174,8 +199,7 @@ void GLWidget::resizeGL(int width, int height) {
   glViewport((width - side) / 2, (height - side) / 2, side, side);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  //glOrtho(-300/zoom_, +300/zoom_, +300/zoom_, -300/zoom_, -1500000, 1500000);
-  glOrtho(-zoom_, +zoom_, +zoom_, -zoom_, -zoomDefault_, zoomDefault_);
+  glOrtho(left*zoomFactor, right*zoomFactor, bottom*zoomFactor, top*zoomFactor, zNear, zFar);
   glMatrixMode(GL_MODELVIEW);
 }
 
@@ -184,21 +208,25 @@ void GLWidget::drawAxes() {
   glDisable(GL_DEPTH_TEST);
   glDisable(GL_LIGHTING);
   glLineWidth(2.0);
-  glScalef(zoomDefault_/4, zoomDefault_/4, zoomDefault_/4);
+  glScalef(zoomFactor/6, zoomFactor/6, zoomFactor/6);
   glBegin(GL_LINES);
-  qglColor(QColor::fromRgbF(1, 0, 0));
-  //glColor3f(1,0,0); // X axis is red.
+  qglColor(QColor::fromRgbF(1, 0, 0));  // X axis is red.
   glVertex3f(0,0,0);
   glVertex3f(1,0,0);
-  qglColor(QColor::fromRgbF(0, 1, 0));
-  //glColor3f(0,1,0); // Y axis is green.
+  qglColor(QColor::fromRgbF(0, 1, 0));  // Y axis is green.
   glVertex3f(0,0,0);
   glVertex3f(0,1,0);
-  qglColor(QColor::fromRgbF(0, 0, 1));
-  //glColor3f(0,0,1); // Z axis is blue.
+  qglColor(QColor::fromRgbF(0, 0, 1));  // Z axis is blue.
   glVertex3f(0,0,0);
   glVertex3f(0,0,1);
   glEnd();
+  // Draw labels
+  qglColor(QColor::fromRgbF(1, 0, 0));
+  renderText(1.0, 0.0, 0.0, "X", QFont("helvetica", 12, QFont::Bold, true));
+  qglColor(QColor::fromRgbF(0, 1, 0));
+  renderText(0.0, 1.0, 0.0, "Y", QFont("helvetica", 12, QFont::Bold, true));
+  qglColor(QColor::fromRgbF(0, 0, 1));
+  renderText(0.0, 0.0, 1.0, "Z", QFont("helvetica", 12, QFont::Bold, true));
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   glPopMatrix();
@@ -243,29 +271,28 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
 void GLWidget::mouseMoveEvent(QMouseEvent *event) {
   int dx = event->x() - lastPos.x();
   int dy = event->y() - lastPos.y();
-
   if (event->buttons() & Qt::LeftButton) {
     if (translationMode) {
-      setXTranslation(xTrans + dx*zoom_/100);
-      setYTranslation(yTrans + dy*zoom_/100);
+      setXTranslation(xTrans - dx*zoomFactor/100);
+      setYTranslation(yTrans + dy*zoomFactor/100);
     } else if (rotationMode) {
       setXRotation(xRot + 8 * dy);
-      setZRotation(zRot + 8 * dx);
+      setZRotation(zRot - 8 * dx);
     }
   } else if (event->buttons() & Qt::RightButton) {
     setXRotation(xRot + 8 * dy);
-    setZRotation(zRot + 8 * dx);
+    setZRotation(zRot - 8 * dx);
   } else if (event->buttons() & Qt::MidButton) {
-    setXTranslation(xTrans + dx*zoom_/100);
-    setYTranslation(yTrans + dy*zoom_/100);
+    setXTranslation(xTrans - dx*zoomFactor/100);
+    setYTranslation(yTrans + dy*zoomFactor/100);
   }
   lastPos = event->pos();
 }
 
 void GLWidget::wheelEvent(QWheelEvent *event) {
   int delta = event->delta();
-  //setZoom(zoom_ - delta*0.001);
-  setZoom(zoom_ - delta*stepSize_);
+  //setZoom(zoomFactor - delta*0.001);
+  setZoom(zoomFactor - delta*zoomInc);
 }
 
 void GLWidget::makeObjectFromEntity(Entity *entity) {
@@ -289,10 +316,14 @@ void GLWidget::makeObjectFromEntity(Entity *entity) {
   xPos = (entity->stats().max.x+entity->stats().min.x)/2;
   yPos = (entity->stats().max.y+entity->stats().min.y)/2;
   zPos = (entity->stats().max.z+entity->stats().min.z)/2;
-  zoomDefault_ = qMax(qMax(qAbs(entity->stats().max.x-entity->stats().min.x),
-    qAbs(entity->stats().max.y-entity->stats().min.y)),
-    qAbs(entity->stats().max.z-entity->stats().min.z));
-  stepSize_ = zoomDefault_/1000;  
+  /*scale = qMax(qMax(qAbs(entity->stats().max.x-entity->stats().min.x),
+               qAbs(entity->stats().max.y-entity->stats().min.y)),
+               qAbs(entity->stats().max.z-entity->stats().min.z));
+  defaultZoomFactor = 1;*/
+  defaultZoomFactor = qMax(qMax(qAbs(entity->stats().max.x-entity->stats().min.x),
+               qAbs(entity->stats().max.y-entity->stats().min.y)),
+               qAbs(entity->stats().max.z-entity->stats().min.z));
+  zoomInc = defaultZoomFactor/1000;
 
   setDefaultCoordinates();
 }
@@ -304,7 +335,6 @@ void GLWidget::deleteObject() {
 
 void GLWidget::triangle(GLdouble x1, GLdouble y1, GLdouble z1, GLdouble x2,
                     GLdouble y2, GLdouble z2, GLdouble x3, GLdouble y3, GLdouble z3) {
-  qglColor(grey);
   glVertex3d(x1, y1, z1);
   glVertex3d(x2, y2, z2);
   glVertex3d(x3, y3, z3);

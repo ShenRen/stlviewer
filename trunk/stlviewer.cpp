@@ -148,14 +148,13 @@ void STLViewer::translate() {
 
 void STLViewer::zoom() {}
 
-void STLViewer::home() {
+void STLViewer::defaultView() {
   activeGLMdiChild()->setDefaultCoordinates();
 }
 
 void STLViewer::about() {
   QMessageBox::about(this, tr("About STLViewer"),
-          tr("<b>STLViewer</b> simule la visualisation de la tête fémorale "
-             "par une caméra endoscopique mobile."));
+    tr("<a href=\"http://www.cravesoft.com\">www.cravesoft.com</b>"));
 }
 
 void STLViewer::updateMenus() {
@@ -277,24 +276,24 @@ void STLViewer::createActions() {
   separatorAct->setSeparator(true);
 
   rotateAct = new QAction(QIcon(":STLViewer/Images/arrow_rotate_clockwise.png"), tr("&Rotation"), this);
-  rotateAct->setStatusTip(tr("Effectuer une rotation"));
+  rotateAct->setStatusTip(tr("Rotate the object"));
   rotateAct->setCheckable(true);
   connect(rotateAct, SIGNAL(triggered()), this, SLOT(rotate()));
   rotateAct->setChecked(false);
     
-  translateAct = new QAction(QIcon(":STLViewer/Images/arrow_out.png"), tr("&Translation"), this);
-  translateAct->setStatusTip(tr("Effectuer une translation"));
+  translateAct = new QAction(QIcon(":STLViewer/Images/arrow_out.png"), tr("&Panning"), this);
+  translateAct->setStatusTip(tr("Drag the object around"));
   translateAct->setCheckable(true);
   connect(translateAct, SIGNAL(triggered()), this, SLOT(translate()));
   translateAct->setChecked(false);
 
-  zoomAct = new QAction(QIcon(":STLViewer/Images/magnifier_zoom_in.png"), tr("&Zoom"), this);
-  zoomAct->setStatusTip(tr("Zoomer sur la scène"));
+  zoomAct = new QAction(QIcon(":STLViewer/Images/magnifier_zoom_in.png"), tr("&Zoom In"), this);
+  zoomAct->setStatusTip(tr("Zoom in"));
   connect(zoomAct, SIGNAL(triggered()), this, SLOT(zoom()));
 
-  homeAct = new QAction(QIcon(":STLViewer/Images/page_white_magnify.png"), tr("&Zoom par défaut"), this);
-  homeAct->setStatusTip(tr("Zoom par défaut"));
-  connect(homeAct, SIGNAL(triggered()), this, SLOT(home()));
+  defaultViewAct = new QAction(QIcon(":STLViewer/Images/page_white_magnify.png"), tr("&Default Zoom"), this);
+  defaultViewAct->setStatusTip(tr("Zoom by default"));
+  connect(defaultViewAct, SIGNAL(triggered()), this, SLOT(defaultView()));
 
   exitAct = new QAction(tr("E&xit"), this);
   exitAct->setShortcut(tr("Ctrl+Q"));
@@ -319,7 +318,7 @@ void STLViewer::createMenus() {
   viewMenu->addAction(rotateAct);
   viewMenu->addAction(translateAct);
   viewMenu->addAction(zoomAct);
-  viewMenu->addAction(homeAct);
+  viewMenu->addAction(defaultViewAct);
   viewMenu->addSeparator();
 
   windowMenu = menuBar()->addMenu(tr("&Window"));
@@ -342,7 +341,7 @@ void STLViewer::createToolBars() {
   viewToolBar->addAction(rotateAct);
   viewToolBar->addAction(translateAct);
   viewToolBar->addAction(zoomAct);
-  viewToolBar->addAction(homeAct);
+  viewToolBar->addAction(defaultViewAct);
 }
 
 void STLViewer::createStatusBar() {

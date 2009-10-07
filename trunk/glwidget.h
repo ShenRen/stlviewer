@@ -46,16 +46,16 @@ class GLWidget : public QGLWidget {
   void setXRotation(int angle);
   void setYRotation(int angle);
   void setZRotation(int angle);
-  void setXTranslation(int distance);
-  void setYTranslation(int distance);
+  void setXTranslation(float distance);
+  void setYTranslation(float distance);
   void setZoom(float zoom);
 
  signals:
   void xRotationChanged(int angle);
   void yRotationChanged(int angle);
   void zRotationChanged(int angle);
-  void xTranslationChanged(int distance);
-  void yTranslationChanged(int distance);
+  void xTranslationChanged(float distance);
+  void yTranslationChanged(float distance);
   void zoomChanged(float zoom);
 
  protected:
@@ -79,21 +79,17 @@ class GLWidget : public QGLWidget {
   GLuint object;
   bool rotationMode;
   bool translationMode;
-  int xRot;
-  int yRot;
-  int zRot;
-  int xPos;
-  int yPos;
-  int zPos;
-  int xTrans;
-  int yTrans;
-  int zTrans;
-  float zoom_;
-  float zoomDefault_;
-  float stepSize_;
+  int xRot, yRot, zRot;
+  int xPos, yPos, zPos;
+  float xTrans, yTrans, zTrans;
+  float zNear, zFar;
+  float left, right, top, bottom;
+  int scale;
+  float zoomFactor;
+  float zoomInc;
+  float defaultZoomFactor;
   QPoint lastPos;
-  QColor grey;
-  QColor purple;
+  QColor grey, black, purple;
 };
 
 #endif  // GLWIDGET_H

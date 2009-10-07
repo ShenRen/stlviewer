@@ -54,7 +54,7 @@ class STLViewer : public QMainWindow {
   void rotate();
   void translate();
   void zoom();
-  void home();
+  void defaultView();
   void about();
   void updateMenus();
   void updateWindowMenu();
@@ -97,7 +97,7 @@ class STLViewer : public QMainWindow {
   QAction *zoomAct;
   QAction *rotateAct;
   QAction *translateAct;
-  QAction *homeAct;
+  QAction *defaultViewAct;
   QAction *viewAct;
   QAction *exitAct;
   QAction *aboutAct;
