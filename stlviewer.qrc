@@ -5,7 +5,7 @@
         <file>Images/page_white.png</file>
         <file>Images/arrow_out.png</file>
         <file>Images/arrow_rotate_clockwise.png</file>
-        <file>Images/magnifier_zoom_in.png</file>
         <file>Images/page_white_magnify.png</file>
+        <file>Images/magnifier_zoom_in.png</file>
     </qresource>
 </RCC>
