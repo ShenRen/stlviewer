@@ -304,9 +304,9 @@ void GLWidget::makeObjectFromEntity(Entity *entity) {
 
   for (int i = 0; i < entity->stats().num_facets; ++i) {
     glNormal3d(entity->facets()[i].normal.x, entity->facets()[i].normal.y, entity->facets()[i].normal.z);
-    triangle(entity->facets()[i].vertex[0].x, entity->facets()[i].vertex[0].y, entity->facets()[i].vertex[0].z,
-        entity->facets()[i].vertex[1].x, entity->facets()[i].vertex[1].y, entity->facets()[i].vertex[1].z,
-        entity->facets()[i].vertex[2].x, entity->facets()[i].vertex[2].y, entity->facets()[i].vertex[2].z);
+    triangle(entity->facets()[i].vector[0].x, entity->facets()[i].vector[0].y, entity->facets()[i].vector[0].z,
+        entity->facets()[i].vector[1].x, entity->facets()[i].vector[1].y, entity->facets()[i].vector[1].z,
+        entity->facets()[i].vector[2].x, entity->facets()[i].vector[2].y, entity->facets()[i].vector[2].z);
   }
 
   glEnd();

@@ -24,6 +24,8 @@
 #include <iostream>
 #include <fstream>
 
+#include "vector.h"
+
 class Entity {
  public:
   Entity();
@@ -35,11 +37,11 @@ class Entity {
     ASCII,
     BINARY
   } Format;
-  typedef struct {
+  /*typedef struct {
     float x;
     float y;
     float z;
-  } Vertex;
+  } Vector;*/
   typedef struct {
     float x;
     float y;
@@ -48,19 +50,21 @@ class Entity {
   typedef char Extra[2];
   typedef struct {
     Normal normal;
-    Vertex vertex[3];
+    Vector vector[3];
     Extra extra;
   } Facet;
   typedef struct {
     char          header[81];
     Format        type;
     int           num_facets;
-    Vertex        max;
-    Vertex        min;
-    Vertex        size;
+    int           num_points;
+    Vector       max;
+    Vector       min;
+    Vector       size;
     float         bounding_diameter;
     float         shortest_edge;
     float         volume;
+    float         surface;
   } Stats;
   Stats stats() const { return stats_; };
   Facet* facets() const { return facets_; };
@@ -75,10 +79,12 @@ class Entity {
   void writeBytesFromFloat(::std::ofstream& file, float);
   void readData(int, int);
   void allocate();
-  float GetVolume();
-  float GetArea(Facet *facet);
-  void CalculateNormal(float normal[], Facet *facet);
-  void NormalizeVector(float v[]);
+  int getNumPoints();
+  float getVolume();
+  float getSurface();
+  float getArea(Facet *facet);
+  void calculateNormal(float normal[], Facet *facet);
+  void normalizeVector(float v[]);
   ::std::ifstream file_;
   Facet *facets_;
   Stats stats_;

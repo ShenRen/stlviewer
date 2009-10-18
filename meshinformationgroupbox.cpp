@@ -51,6 +51,6 @@ void MeshInformationGroupBox::setValues(const Entity::Stats stats) {
 
   data.setNum(stats.num_facets);
   num_facets->setText(data);
-  //data.setNum(stats.num_points);
-  //num_points->setText(data);
+  data.setNum(stats.num_points);
+  num_points->setText(data);
 }
