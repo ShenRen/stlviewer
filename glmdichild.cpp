@@ -64,9 +64,21 @@ bool GLMdiChild::save() {
 }
 
 bool GLMdiChild::saveAs() {
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), curFile, tr("STL Files (*.stl);;All Files (*.*)"));
+  QString filterBin = tr("STL Files, binary (*.stl)");
+  QString filterAscii = tr("STL Files, ASCII (*.stl)");
+  QString filterAll = tr("All files (*.*)");
+  QString filterSel;
+  if (entity_->stats().type == Entity::ASCII)
+    filterSel = filterAscii;
+  else
+    filterSel = filterBin;
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), curFile, filterBin + ";;" + filterAscii + ";;" + filterAll, &filterSel);
   if (fileName.isEmpty())
     return false;
+  if (filterSel == filterBin)
+    entity_->setFormat(Entity::BINARY);
+  else if (filterSel == filterAscii)
+    entity_->setFormat(Entity::ASCII);
   return saveFile(fileName);
 }
 

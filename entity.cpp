@@ -56,6 +56,13 @@ void Entity::write(const ::std::string& file_name) {
   }
 }
 
+void Entity::setFormat(const int format) {
+  if (format == ASCII)
+    stats_.type = ASCII;
+  else if (format == BINARY)
+    stats_.type = BINARY;
+}
+
 int lowerCase(int c) {
   return tolower(c);
 }
@@ -347,9 +354,35 @@ void Entity::writeAscii(const ::std::string& file_name) {
     file << "endsolid" << ::std::endl;
 
     file.close();
+
   } else {
     exit(1);
   }
+
+  /*FILE *fp = fopen(file_name.c_str(), "w");
+  fprintf(fp, "solid\n");
+  for(int i = 0; i < stats_.num_facets; i++) {
+    fprintf(fp, "  facet normal % 0.8f % 0.8f % 0.8f\n",
+    facets_[i].normal.x, facets_[i].normal.y,
+    facets_[i].normal.z);
+    fprintf(fp, "    outer loop\n");
+    fprintf(fp, "      vertex % 0.8f % 0.8f % 0.8f\n",
+    facets_[i].vector[0].x, facets_[i].vector[0].y,
+    facets_[i].vector[0].z);
+    fprintf(fp, "      vertex % 0.8f % 0.8f % 0.8f\n",
+    facets_[i].vector[1].x, facets_[i].vector[1].y,
+    facets_[i].vector[1].z);
+    fprintf(fp, "      vertex % 0.8f % 0.8f % 0.8f\n",
+    facets_[i].vector[2].x, facets_[i].vector[2].y,
+    facets_[i].vector[2].z);
+    fprintf(fp, "    endloop\n");
+    fprintf(fp, "  endfacet\n");
+  }
+
+  fprintf(fp, "endsolid\n");
+
+  fclose(fp);*/
+  
 }
 
 int Entity::getNumPoints() {
