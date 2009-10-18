@@ -32,6 +32,7 @@ class Entity {
   ~Entity();
   void open(const ::std::string&);
   void write(const ::std::string&);
+  void setFormat(const int format);
   void close();
   typedef enum {
     ASCII,

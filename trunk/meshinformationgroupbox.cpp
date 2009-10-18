@@ -29,11 +29,11 @@ MeshInformationGroupBox::MeshInformationGroupBox(QWidget *parent)
 
   layout->addWidget(new QLabel("# Facets:"), 0, 0);
   num_facets = new QLabel("");
-  num_facets->setAlignment(Qt::AlignLeft);
+  num_facets->setAlignment(Qt::AlignRight);
   layout->addWidget(num_facets, 0, 1);
   layout->addWidget(new QLabel("# Points:"), 1, 0);
   num_points = new QLabel("");
-  num_points->setAlignment(Qt::AlignLeft);
+  num_points->setAlignment(Qt::AlignRight);
   layout->addWidget(num_points, 1, 1);
 
   setLayout(layout);

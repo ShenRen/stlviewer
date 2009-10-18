@@ -291,7 +291,6 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
 
 void GLWidget::wheelEvent(QWheelEvent *event) {
   int delta = event->delta();
-  //setZoom(zoomFactor - delta*0.001);
   setZoom(zoomFactor - delta*zoomInc);
 }
 
@@ -316,10 +315,6 @@ void GLWidget::makeObjectFromEntity(Entity *entity) {
   xPos = (entity->stats().max.x+entity->stats().min.x)/2;
   yPos = (entity->stats().max.y+entity->stats().min.y)/2;
   zPos = (entity->stats().max.z+entity->stats().min.z)/2;
-  /*scale = qMax(qMax(qAbs(entity->stats().max.x-entity->stats().min.x),
-               qAbs(entity->stats().max.y-entity->stats().min.y)),
-               qAbs(entity->stats().max.z-entity->stats().min.z));
-  defaultZoomFactor = 1;*/
   defaultZoomFactor = qMax(qMax(qAbs(entity->stats().max.x-entity->stats().min.x),
                qAbs(entity->stats().max.y-entity->stats().min.y)),
                qAbs(entity->stats().max.z-entity->stats().min.z));
