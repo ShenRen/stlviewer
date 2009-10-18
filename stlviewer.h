@@ -102,6 +102,8 @@ class STLViewer : public QMainWindow {
   QAction *exitAct;
   QAction *aboutAct;
 
+  QString curDir;
+
   DimensionsGroupBox *dimensionsGroupBox;
   MeshInformationGroupBox *meshInformationGroupBox;
   PropertiesGroupBox *propertiesGroupBox;

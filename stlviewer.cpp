@@ -79,8 +79,9 @@ void STLViewer::newFile() {
 }
 
 void STLViewer::open() {
-  QString fileName = QFileDialog::getOpenFileName(this, tr("Open a file"), QString(), tr("STL Files (*.stl);;All Files (*.*)"));
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open a file"), curDir, tr("STL Files (*.stl);;All Files (*.*)"));
   if (!fileName.isEmpty()) {
+    curDir = QFileInfo(fileName).filePath();
     QMdiSubWindow *existing = findGLMdiChild(fileName);
     if (existing) {
       mdiArea->setActiveSubWindow(existing);
@@ -350,6 +351,7 @@ void STLViewer::createStatusBar() {
 
 void STLViewer::readSettings() {
   QSettings settings("Cravesoft", "STLViewer");
+  curDir = settings.value("dir", QString()).toString();
   QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
   QSize size = settings.value("size", QSize(400, 400)).toSize();
   resize(size);
@@ -358,6 +360,7 @@ void STLViewer::readSettings() {
 
 void STLViewer::writeSettings() {
   QSettings settings("Cravesoft", "STLViewer");
+  settings.setValue("dir", curDir);
   settings.setValue("pos", pos());
   settings.setValue("size", size());
 }
