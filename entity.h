@@ -34,10 +34,10 @@ class Entity {
   void write(const ::std::string&);
   void setFormat(const int format);
   void close();
-  typedef enum {
+  enum Format {
     ASCII,
     BINARY
-  } Format;
+  };
   /*typedef struct {
     float x;
     float y;

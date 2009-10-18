@@ -31,8 +31,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent) {
   xTrans= yTrans= zTrans= 0;
   defaultZoomFactor = zoomFactor = 1.0;
   zoomInc = 0;
-  rotationMode = false;
-  translationMode = false;
+  leftMouseButtonMode_ = INACTIVE;
   left = -1;
   right = 1;
   bottom = -1;
@@ -60,22 +59,18 @@ QSize GLWidget::sizeHint() const {
 void GLWidget::updateCursor() {
   QCursor cursor = this->cursor();
   cursor.setShape(Qt::ArrowCursor);
-  if (rotationMode)
+  if (leftMouseButtonMode_ == ROTATE)
     cursor.setShape(Qt::SizeAllCursor);
-  else if (translationMode)
+  else if (leftMouseButtonMode_ == TRANSLATE)
     cursor.setShape(Qt::SizeAllCursor);
   QWidget::setCursor(cursor);
 }
 
-void GLWidget::setTranslationMode(bool mode) {
-  translationMode = mode;
+void GLWidget::setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode mode) {
+  leftMouseButtonMode_ = mode;
   updateCursor();
 }
 
-void GLWidget::setRotationMode(bool mode) {
-  rotationMode = mode;
-  updateCursor();
-}
 
 void GLWidget::setXRotation(int angle) {
   normalizeAngle(&angle);
@@ -235,9 +230,9 @@ void GLWidget::drawAxes() {
 void GLWidget::mousePressEvent(QMouseEvent *event) {
   lastPos = event->pos();
   QCursor cursor = this->cursor();
-  if (rotationMode)
+  if (leftMouseButtonMode_ == ROTATE)
     cursor.setShape(Qt::SizeAllCursor);
-  if (translationMode)
+  if (leftMouseButtonMode_ == TRANSLATE)
     cursor.setShape(Qt::SizeAllCursor);
   if (event->buttons() & Qt::RightButton) {
     cursor.setShape(Qt::SizeAllCursor);
@@ -272,10 +267,10 @@ void GLWidget::mouseMoveEvent(QMouseEvent *event) {
   int dx = event->x() - lastPos.x();
   int dy = event->y() - lastPos.y();
   if (event->buttons() & Qt::LeftButton) {
-    if (translationMode) {
+    if (leftMouseButtonMode_ == TRANSLATE) {
       setXTranslation(xTrans - dx*zoomFactor/100);
       setYTranslation(yTrans + dy*zoomFactor/100);
-    } else if (rotationMode) {
+    } else if (leftMouseButtonMode_ == ROTATE) {
       setXRotation(xRot + 8 * dy);
       setZRotation(zRot - 8 * dx);
     }

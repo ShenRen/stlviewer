@@ -43,8 +43,14 @@ class GLMdiChild : public GLWidget {
 
   Entity::Stats getStats() const { return entity_->stats(); };
 
+ signals:
+  void mouseButtonPressed(Qt::MouseButtons button);
+  void mouseButtonReleased(Qt::MouseButtons button);
+
  protected:
   void closeEvent(QCloseEvent *event);
+  void mousePressEvent(QMouseEvent *event);
+  void mouseReleaseEvent(QMouseEvent *event);
 
  private:
   bool maybeSave();

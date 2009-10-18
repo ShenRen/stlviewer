@@ -118,3 +118,13 @@ QString GLMdiChild::strippedName(const QString &fullFileName) {
 bool GLMdiChild::maybeSave() {
   return true;
 }
+
+void GLMdiChild::mousePressEvent(QMouseEvent *event) {
+  emit mouseButtonPressed(event->buttons());
+  GLWidget::mousePressEvent(event);
+}
+
+void GLMdiChild::mouseReleaseEvent(QMouseEvent *event) {
+  emit mouseButtonReleased(event->button());
+  GLWidget::mouseReleaseEvent(event);
+}

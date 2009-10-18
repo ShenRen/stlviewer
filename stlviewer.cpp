@@ -24,7 +24,6 @@
 #include <fstream>
 
 #include "stlviewer.h"
-#include "glmdichild.h"
 #include "dimensionsgroupbox.h"
 #include "meshinformationgroupbox.h"
 #include "propertiesgroupbox.h"
@@ -51,6 +50,8 @@ STLViewer::STLViewer(QWidget *parent, Qt::WFlags flags)
   updateMenus();
 
   readSettings();
+
+  leftMouseButtonMode_ = GLWidget::INACTIVE;
 
   setWindowTitle(tr("STLViewer"));
   setUnifiedTitleAndToolBarOnMac(true);
@@ -113,18 +114,21 @@ void STLViewer::rotate() {
   if (rotateAct->isChecked()) {
     rotateAct->setChecked(true);
     translateAct->setChecked(false);
-    for (int i = 0; i < windows.size(); ++i) {
+    leftMouseButtonMode_ = GLWidget::ROTATE;
+    /*for (int i = 0; i < windows.size(); ++i) {
       GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
       child->setRotationMode(true);
       child->setTranslationMode(false);
-    }
+    }*/
   } else {
     rotateAct->setChecked(false);
-    for (int i = 0; i < windows.size(); ++i) {
+    leftMouseButtonMode_ = GLWidget::INACTIVE;
+    /*for (int i = 0; i < windows.size(); ++i) {
       GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
       child->setRotationMode(false);
-    }
+    }*/
   }
+  emit leftMouseButtonModeChanged(leftMouseButtonMode_);
 }
 
 void STLViewer::translate() {
@@ -133,18 +137,21 @@ void STLViewer::translate() {
   if (translateAct->isChecked()) {
     translateAct->setChecked(true);
     rotateAct->setChecked(false);
-    for (int i = 0; i < windows.size(); ++i) {
+    leftMouseButtonMode_ = GLWidget::TRANSLATE;
+    /*for (int i = 0; i < windows.size(); ++i) {
       GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
       child->setTranslationMode(true);
       child->setRotationMode(false);
-    }
+    }*/
   } else {
     translateAct->setChecked(false);
-    for (int i = 0; i < windows.size(); ++i) {
+    leftMouseButtonMode_ = GLWidget::INACTIVE;
+    /*for (int i = 0; i < windows.size(); ++i) {
       GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
       child->setTranslationMode(false);
-    }
+    }*/
   }
+  emit leftMouseButtonModeChanged(leftMouseButtonMode_);
 }
 
 void STLViewer::zoom() {}
@@ -215,8 +222,29 @@ void STLViewer::updateWindowMenu() {
 GLMdiChild *STLViewer::createGLMdiChild() {
   GLMdiChild *child = new GLMdiChild;
   mdiArea->addSubWindow(child);
+  connect(child, SIGNAL(mouseButtonPressed(Qt::MouseButtons)), this, SLOT(setMousePressEvent(Qt::MouseButtons)));
+  connect(child, SIGNAL(mouseButtonReleased(Qt::MouseButtons)), this, SLOT(setMouseReleaseEvent(Qt::MouseButtons)));
+  connect(this, SIGNAL(leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode)), child, SLOT(setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode)));
 
   return child;
+}
+
+void STLViewer::setMousePressEvent(Qt::MouseButtons button) {
+  if (button & Qt::RightButton) {
+    rotateAct->setChecked(true);
+  } else if (button & Qt::MidButton) {
+    translateAct->setChecked(true);
+  }
+}
+
+void STLViewer::setMouseReleaseEvent(Qt::MouseButtons button) {
+  if (button & Qt::RightButton) {
+    if (leftMouseButtonMode_ != GLWidget::ROTATE)
+      rotateAct->setChecked(false);
+  } else if (button & Qt::MidButton) {
+    if (leftMouseButtonMode_ != GLWidget::TRANSLATE)
+      translateAct->setChecked(false);
+  }
 }
 
 void STLViewer::createActions() {
