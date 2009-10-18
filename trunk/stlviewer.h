@@ -24,7 +24,8 @@
 #include <QtGui/QMainWindow>
 #include <QtGui/QWidget>
 
-class GLMdiChild;
+#include "glmdichild.h"
+
 class DimensionsGroupBox;
 class MeshInformationGroupBox;
 class PropertiesGroupBox;
@@ -43,6 +44,9 @@ class STLViewer : public QMainWindow {
   STLViewer(QWidget *parent = 0, Qt::WFlags flags = 0);
   ~STLViewer();
 
+ signals:
+  void leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode mode);
+
  protected:
   void closeEvent(QCloseEvent *event);
 
@@ -58,6 +62,8 @@ class STLViewer : public QMainWindow {
   void about();
   void updateMenus();
   void updateWindowMenu();
+  void setMousePressEvent(Qt::MouseButtons button);
+  void setMouseReleaseEvent(Qt::MouseButtons button);
   GLMdiChild *createGLMdiChild();
   void setActiveSubWindow(QWidget *window);
 
@@ -103,6 +109,8 @@ class STLViewer : public QMainWindow {
   QAction *aboutAct;
 
   QString curDir;
+
+  GLWidget::LeftMouseButtonMode leftMouseButtonMode_;
 
   DimensionsGroupBox *dimensionsGroupBox;
   MeshInformationGroupBox *meshInformationGroupBox;

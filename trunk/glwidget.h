@@ -39,8 +39,12 @@ class GLWidget : public QGLWidget {
   QSize minimumSizeHint() const;
   QSize sizeHint() const;
   void setDefaultCoordinates();
-  void setTranslationMode(bool);
-  void setRotationMode(bool);
+
+  enum LeftMouseButtonMode {
+    INACTIVE,
+    ROTATE,
+    TRANSLATE
+  };
 
  public slots:
   void setXRotation(int angle);
@@ -49,6 +53,7 @@ class GLWidget : public QGLWidget {
   void setXTranslation(float distance);
   void setYTranslation(float distance);
   void setZoom(float zoom);
+  void setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode);
 
  signals:
   void xRotationChanged(int angle);
@@ -77,8 +82,7 @@ class GLWidget : public QGLWidget {
 
   //GLfloat panMatrix[16];
   GLuint object;
-  bool rotationMode;
-  bool translationMode;
+  LeftMouseButtonMode leftMouseButtonMode_;
   int xRot, yRot, zRot;
   int xPos, yPos, zPos;
   float xTrans, yTrans, zTrans;
