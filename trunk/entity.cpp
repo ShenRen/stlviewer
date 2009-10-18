@@ -23,6 +23,7 @@
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include <vector>
 
 #include "entity.h"
 
@@ -62,6 +63,8 @@ int lowerCase(int c) {
 void Entity::initialize(const ::std::string& file_name) {
 
   stats_.num_facets = 0;
+  stats_.num_points = 0;
+  stats_.surface = -1.0;
   stats_.volume = -1.0;
   facets_ = 0;
 
@@ -154,15 +157,15 @@ void Entity::readData(int first_facet, int first) {
 	    facet.normal.x = readFloatFromBytes(file_);
 	    facet.normal.y = readFloatFromBytes(file_);
 	    facet.normal.z = readFloatFromBytes(file_);
-	    facet.vertex[0].x = readFloatFromBytes(file_);
-	    facet.vertex[0].y = readFloatFromBytes(file_);
-	    facet.vertex[0].z = readFloatFromBytes(file_);
-	    facet.vertex[1].x = readFloatFromBytes(file_);
-	    facet.vertex[1].y = readFloatFromBytes(file_);
-	    facet.vertex[1].z = readFloatFromBytes(file_);
-	    facet.vertex[2].x = readFloatFromBytes(file_);
-	    facet.vertex[2].y = readFloatFromBytes(file_);
-	    facet.vertex[2].z = readFloatFromBytes(file_);
+	    facet.vector[0].x = readFloatFromBytes(file_);
+	    facet.vector[0].y = readFloatFromBytes(file_);
+	    facet.vector[0].z = readFloatFromBytes(file_);
+	    facet.vector[1].x = readFloatFromBytes(file_);
+	    facet.vector[1].y = readFloatFromBytes(file_);
+	    facet.vector[1].z = readFloatFromBytes(file_);
+	    facet.vector[2].x = readFloatFromBytes(file_);
+	    facet.vector[2].y = readFloatFromBytes(file_);
+	    facet.vector[2].z = readFloatFromBytes(file_);
 	    facet.extra[0] = file_.get();
 	    facet.extra[1] = file_.get();
     } else {  // Read a single facet from an ASCII .STL file
@@ -170,11 +173,11 @@ void Entity::readData(int first_facet, int first) {
       file_ >> junk >> junk;
       file_ >> facet.normal.x >> facet.normal.y >> facet.normal.z;
       file_ >> junk >> junk >> junk;
-      file_ >> facet.vertex[0].x >> facet.vertex[0].y >> facet.vertex[0].z;
+      file_ >> facet.vector[0].x >> facet.vector[0].y >> facet.vector[0].z;
       file_ >> junk;
-      file_ >> facet.vertex[1].x >> facet.vertex[1].y >> facet.vertex[1].z;
+      file_ >> facet.vector[1].x >> facet.vector[1].y >> facet.vector[1].z;
       file_ >> junk;
-      file_ >> facet.vertex[2].x >> facet.vertex[2].y >> facet.vertex[2].z;
+      file_ >> facet.vector[2].x >> facet.vector[2].y >> facet.vector[2].z;
       file_ >> junk >> junk;
     }
     // Write the facet into memory.
@@ -185,16 +188,16 @@ void Entity::readData(int first_facet, int first) {
 
     // Initialize the max and min values the first time through
     if (first) {
-	    stats_.max.x = facet.vertex[0].x;
-	    stats_.min.x = facet.vertex[0].x;
-	    stats_.max.y = facet.vertex[0].y;
-	    stats_.min.y = facet.vertex[0].y;
-	    stats_.max.z = facet.vertex[0].z;
-	    stats_.min.z = facet.vertex[0].z;
+	    stats_.max.x = facet.vector[0].x;
+	    stats_.min.x = facet.vector[0].x;
+	    stats_.max.y = facet.vector[0].y;
+	    stats_.min.y = facet.vector[0].y;
+	    stats_.max.z = facet.vector[0].z;
+	    stats_.min.z = facet.vector[0].z;
   	  
-	    float diff_x = qAbs(facet.vertex[0].x - facet.vertex[1].x);
-	    float diff_y = qAbs(facet.vertex[0].y - facet.vertex[1].y);
-	    float diff_z = qAbs(facet.vertex[0].z - facet.vertex[1].z);
+	    float diff_x = qAbs(facet.vector[0].x - facet.vector[1].x);
+	    float diff_y = qAbs(facet.vector[0].y - facet.vector[1].y);
+	    float diff_z = qAbs(facet.vector[0].z - facet.vector[1].z);
 	    float max_diff = qMax(diff_x, diff_y);
 	    max_diff = qMax(diff_z, max_diff);
 	    stats_.shortest_edge = max_diff;
@@ -202,32 +205,34 @@ void Entity::readData(int first_facet, int first) {
       first = 0;
     }
     // Now find the max and min values
-    stats_.max.x = qMax(stats_.max.x, facet.vertex[0].x);
-    stats_.min.x = qMin(stats_.min.x, facet.vertex[0].x);
-    stats_.max.y = qMax(stats_.max.y, facet.vertex[0].y);
-    stats_.min.y = qMin(stats_.min.y, facet.vertex[0].y);
-    stats_.max.z = qMax(stats_.max.z, facet.vertex[0].z);
-    stats_.min.z = qMin(stats_.min.z, facet.vertex[0].z);
+    stats_.max.x = qMax(stats_.max.x, facet.vector[0].x);
+    stats_.min.x = qMin(stats_.min.x, facet.vector[0].x);
+    stats_.max.y = qMax(stats_.max.y, facet.vector[0].y);
+    stats_.min.y = qMin(stats_.min.y, facet.vector[0].y);
+    stats_.max.z = qMax(stats_.max.z, facet.vector[0].z);
+    stats_.min.z = qMin(stats_.min.z, facet.vector[0].z);
 
-    stats_.max.x = qMax(stats_.max.x, facet.vertex[1].x);
-    stats_.min.x = qMin(stats_.min.x, facet.vertex[1].x);
-    stats_.max.y = qMax(stats_.max.y, facet.vertex[1].y);
-    stats_.min.y = qMin(stats_.min.y, facet.vertex[1].y);
-    stats_.max.z = qMax(stats_.max.z, facet.vertex[1].z);
-    stats_.min.z = qMin(stats_.min.z, facet.vertex[1].z);
+    stats_.max.x = qMax(stats_.max.x, facet.vector[1].x);
+    stats_.min.x = qMin(stats_.min.x, facet.vector[1].x);
+    stats_.max.y = qMax(stats_.max.y, facet.vector[1].y);
+    stats_.min.y = qMin(stats_.min.y, facet.vector[1].y);
+    stats_.max.z = qMax(stats_.max.z, facet.vector[1].z);
+    stats_.min.z = qMin(stats_.min.z, facet.vector[1].z);
 
-    stats_.max.x = qMax(stats_.max.x, facet.vertex[2].x);
-    stats_.min.x = qMin(stats_.min.x, facet.vertex[2].x);
-    stats_.max.y = qMax(stats_.max.y, facet.vertex[2].y);
-    stats_.min.y = qMin(stats_.min.y, facet.vertex[2].y);
-    stats_.max.z = qMax(stats_.max.z, facet.vertex[2].z);
-    stats_.min.z = qMin(stats_.min.z, facet.vertex[2].z);
+    stats_.max.x = qMax(stats_.max.x, facet.vector[2].x);
+    stats_.min.x = qMin(stats_.min.x, facet.vector[2].x);
+    stats_.max.y = qMax(stats_.max.y, facet.vector[2].y);
+    stats_.min.y = qMin(stats_.min.y, facet.vector[2].y);
+    stats_.max.z = qMax(stats_.max.z, facet.vector[2].z);
+    stats_.min.z = qMin(stats_.min.z, facet.vector[2].z);
   }
   stats_.size.x = stats_.max.x - stats_.min.x;
   stats_.size.y = stats_.max.y - stats_.min.y;
   stats_.size.z = stats_.max.z - stats_.min.z;
   stats_.bounding_diameter =  sqrt(stats_.size.x * stats_.size.x + stats_.size.y * stats_.size.y + stats_.size.z * stats_.size.z);
-  stats_.volume = GetVolume();
+  stats_.num_points = getNumPoints();
+  stats_.surface = getSurface();
+  stats_.volume = getVolume();
 }
 
 
@@ -300,15 +305,15 @@ void Entity::writeBinary(const ::std::string& file_name) {
       writeBytesFromFloat(file, facets_[i].normal.x);
       writeBytesFromFloat(file, facets_[i].normal.y);
       writeBytesFromFloat(file, facets_[i].normal.z);
-      writeBytesFromFloat(file, facets_[i].vertex[0].x);
-      writeBytesFromFloat(file, facets_[i].vertex[0].y);
-      writeBytesFromFloat(file, facets_[i].vertex[0].z);
-      writeBytesFromFloat(file, facets_[i].vertex[1].x);
-      writeBytesFromFloat(file, facets_[i].vertex[1].y);
-      writeBytesFromFloat(file, facets_[i].vertex[1].z);
-      writeBytesFromFloat(file, facets_[i].vertex[2].x);
-      writeBytesFromFloat(file, facets_[i].vertex[2].y);
-      writeBytesFromFloat(file, facets_[i].vertex[2].z);
+      writeBytesFromFloat(file, facets_[i].vector[0].x);
+      writeBytesFromFloat(file, facets_[i].vector[0].y);
+      writeBytesFromFloat(file, facets_[i].vector[0].z);
+      writeBytesFromFloat(file, facets_[i].vector[1].x);
+      writeBytesFromFloat(file, facets_[i].vector[1].y);
+      writeBytesFromFloat(file, facets_[i].vector[1].z);
+      writeBytesFromFloat(file, facets_[i].vector[2].x);
+      writeBytesFromFloat(file, facets_[i].vector[2].y);
+      writeBytesFromFloat(file, facets_[i].vector[2].z);
       file << facets_[i].extra[0];
       file << facets_[i].extra[1];
     }
@@ -332,9 +337,9 @@ void Entity::writeAscii(const ::std::string& file_name) {
     for(int i = 0; i < stats_.num_facets; i++) {
       file << "  facet normal " << facets_[i].normal.x << " " << facets_[i].normal.y << " " << facets_[i].normal.z << ::std::endl;
       file << "    outer loop " << ::std::endl;
-      file << "      vertex " << facets_[i].vertex[0].x << " " << facets_[i].vertex[0].y << " " << facets_[i].vertex[0].z << ::std::endl;
-      file << "      vertex " << facets_[i].vertex[1].x << " " << facets_[i].vertex[1].y << " " << facets_[i].vertex[1].z << ::std::endl;
-      file << "      vertex " << facets_[i].vertex[2].x << " " << facets_[i].vertex[2].y << " " << facets_[i].vertex[2].z << ::std::endl;
+      file << "      Vector " << facets_[i].vector[0].x << " " << facets_[i].vector[0].y << " " << facets_[i].vector[0].z << ::std::endl;
+      file << "      Vector " << facets_[i].vector[1].x << " " << facets_[i].vector[1].y << " " << facets_[i].vector[1].z << ::std::endl;
+      file << "      Vector " << facets_[i].vector[2].x << " " << facets_[i].vector[2].y << " " << facets_[i].vector[2].z << ::std::endl;
       file << "    endloop" << ::std::endl;
       file << "  endfacet" << ::std::endl;
     }
@@ -347,27 +352,36 @@ void Entity::writeAscii(const ::std::string& file_name) {
   }
 }
 
-float Entity::GetVolume() {
-  Vertex p0;
-  Vertex p;
-  Normal n;
-  float height;
-  float area;
+int Entity::getNumPoints() {
+  ::std::vector<Vector> vectors;
+  for(int i = 0; i < stats_.num_facets; i++) {
+    for(int j = 0; j < 3; j++) {
+      vectors.push_back(facets_[i].vector[j]);
+    }
+  }
+  ::std::sort(vectors.begin(), vectors.end());
+  vectors.erase(::std::unique(vectors.begin(), vectors.end()), vectors.end());
+  return vectors.size();
+}
+
+float Entity::getVolume() {
+  Vector p0;
+  Vector p;
   float volume = 0.0;
 
   // Choose a point, any point as the reference
-  p0.x = facets_[0].vertex[0].x;
-  p0.y = facets_[0].vertex[0].y;
-  p0.z = facets_[0].vertex[0].z;
+  p0.x = facets_[0].vector[0].x;
+  p0.y = facets_[0].vector[0].y;
+  p0.z = facets_[0].vector[0].z;
 
   for(int i = 0; i < stats_.num_facets; i++) {
-    p.x = facets_[i].vertex[0].x - p0.x;
-    p.y = facets_[i].vertex[0].y - p0.y;
-    p.z = facets_[i].vertex[0].z - p0.z;
+    p.x = facets_[i].vector[0].x - p0.x;
+    p.y = facets_[i].vector[0].y - p0.y;
+    p.z = facets_[i].vector[0].z - p0.z;
     // Do dot product to get distance from point to plane
-    n = facets_[i].normal;
-    height = (n.x * p.x) + (n.y * p.y) + (n.z * p.z);
-    area = GetArea(&facets_[i]);
+    Normal n = facets_[i].normal;
+    float height = (n.x * p.x) + (n.y * p.y) + (n.z * p.z);
+    float area = getArea(&facets_[i]);
     volume += (area * height) / 3.0;
   }
 	if(volume < 0.0) {
@@ -376,18 +390,31 @@ float Entity::GetVolume() {
   return volume;
 }
 
-float Entity::GetArea(Facet *facet) {
+float Entity::getSurface() {
+  float surface = 0.0;
+
+  for(int i = 0; i < stats_.num_facets; i++) {
+    float area = getArea(&facets_[i]);
+    surface += area;
+  }
+	if(surface < 0.0) {
+		surface = -surface;
+	}
+  return surface;
+}
+
+float Entity::getArea(Facet *facet) {
 	float cross[3][3];
 	float sum[3];
 	float n[3];
 	
 	for(int i = 0; i < 3; i++) {
-    cross[i][0]=((facet->vertex[i].y * facet->vertex[(i + 1) % 3].z) -
-    (facet->vertex[i].z * facet->vertex[(i + 1) % 3].y));
-    cross[i][1]=((facet->vertex[i].z * facet->vertex[(i + 1) % 3].x) -
-    (facet->vertex[i].x * facet->vertex[(i + 1) % 3].z));
-    cross[i][2]=((facet->vertex[i].x * facet->vertex[(i + 1) % 3].y) -
-    (facet->vertex[i].y * facet->vertex[(i + 1) % 3].x));
+    cross[i][0]=((facet->vector[i].y * facet->vector[(i + 1) % 3].z) -
+    (facet->vector[i].z * facet->vector[(i + 1) % 3].y));
+    cross[i][1]=((facet->vector[i].z * facet->vector[(i + 1) % 3].x) -
+    (facet->vector[i].x * facet->vector[(i + 1) % 3].z));
+    cross[i][2]=((facet->vector[i].x * facet->vector[(i + 1) % 3].y) -
+    (facet->vector[i].y * facet->vector[(i + 1) % 3].x));
 	}
 	
 	sum[0] = cross[0][0] + cross[1][0] + cross[2][0];
@@ -395,30 +422,30 @@ float Entity::GetArea(Facet *facet) {
 	sum[2] = cross[0][2] + cross[1][2] + cross[2][2];
 
 	// This should already be done.  But just in case, let's do it again
-	CalculateNormal(n, facet);
-	NormalizeVector(n);
+	calculateNormal(n, facet);
+	normalizeVector(n);
 
 	float area = 0.5 * (n[0] * sum[0] + n[1] * sum[1] + n[2] * sum[2]);
 	return area;
 }
 
-void Entity::CalculateNormal(float normal[], Facet *facet) {
+void Entity::calculateNormal(float normal[], Facet *facet) {
   float v1[3];
   float v2[3];
 
-  v1[0] = facet->vertex[1].x - facet->vertex[0].x;
-  v1[1] = facet->vertex[1].y - facet->vertex[0].y;
-  v1[2] = facet->vertex[1].z - facet->vertex[0].z;
-  v2[0] = facet->vertex[2].x - facet->vertex[0].x;
-  v2[1] = facet->vertex[2].y - facet->vertex[0].y;
-  v2[2] = facet->vertex[2].z - facet->vertex[0].z;
+  v1[0] = facet->vector[1].x - facet->vector[0].x;
+  v1[1] = facet->vector[1].y - facet->vector[0].y;
+  v1[2] = facet->vector[1].z - facet->vector[0].z;
+  v2[0] = facet->vector[2].x - facet->vector[0].x;
+  v2[1] = facet->vector[2].y - facet->vector[0].y;
+  v2[2] = facet->vector[2].z - facet->vector[0].z;
 
   normal[0] = (float)((double)v1[1] * (double)v2[2]) - ((double)v1[2] * (double)v2[1]);
   normal[1] = (float)((double)v1[2] * (double)v2[0]) - ((double)v1[0] * (double)v2[2]);
   normal[2] = (float)((double)v1[0] * (double)v2[1]) - ((double)v1[1] * (double)v2[0]);
 }
 
-void Entity::NormalizeVector(float v[]) {
+void Entity::normalizeVector(float v[]) {
   double length = sqrt((double)v[0] * (double)v[0] + (double)v[1] * (double)v[1] + (double)v[2] * (double)v[2]);
   float min_normal_length = 0.000000000001;
   if(length < min_normal_length) {

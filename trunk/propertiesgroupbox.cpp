@@ -36,7 +36,7 @@ PropertiesGroupBox::PropertiesGroupBox(QWidget *parent)
   surface->setAlignment(Qt::AlignRight);
   layout->addWidget(surface, 1, 1);
   layout->addWidget(new QLabel("mm^3"), 0, 2);
-  layout->addWidget(new QLabel("mm^3"), 1, 2);
+  layout->addWidget(new QLabel("mm^2"), 1, 2);
 
   setLayout(layout);
 }
@@ -51,8 +51,8 @@ void PropertiesGroupBox::reset() {
 void PropertiesGroupBox::setValues(const Entity::Stats stats) {
   QString data;
 
-  data.setNum(stats.volume);
+  data.setNum(stats.volume, 'f', 3);
   volume->setText(data);
-  //data.setNum(stats.surface);
-  //surface->setText(data);
+  data.setNum(stats.surface, 'f', 3);
+  surface->setText(data);
 }

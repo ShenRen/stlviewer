@@ -98,24 +98,24 @@ void DimensionsGroupBox::reset() {
 void DimensionsGroupBox::setValues(const Entity::Stats stats) {
   QString data;
 
-  data.setNum(stats.max.x);
+  data.setNum(stats.max.x, 'f', 3);
   xMax->setText(data);
-  data.setNum(stats.min.x);
+  data.setNum(stats.min.x, 'f', 3);
   xMin->setText(data);
-  data.setNum(stats.max.x-stats.min.x);
+  data.setNum(stats.max.x-stats.min.x, 'f', 3);
   xDelta->setText(data);
 
-  data.setNum(stats.max.y);
+  data.setNum(stats.max.y, 'f', 3);
   yMax->setText(data);
-  data.setNum(stats.min.y);
+  data.setNum(stats.min.y, 'f', 3);
   yMin->setText(data);
-  data.setNum(stats.max.y-stats.min.y);
+  data.setNum(stats.max.y-stats.min.y, 'f', 3);
   yDelta->setText(data);
 
-  data.setNum(stats.max.z);
+  data.setNum(stats.max.z, 'f', 3);
   zMax->setText(data);
-  data.setNum(stats.min.z);
+  data.setNum(stats.min.z, 'f', 3);
   zMin->setText(data);
-  data.setNum(stats.max.z-stats.min.z);
+  data.setNum(stats.max.z-stats.min.z, 'f', 3);
   zDelta->setText(data);
 }
