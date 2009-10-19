@@ -177,6 +177,10 @@ void STLViewer::updateMenus() {
   saveImageAct->setEnabled(hasGLMdiChild);
   closeAct->setEnabled(hasGLMdiChild);
   closeAllAct->setEnabled(hasGLMdiChild);
+  zoomAct->setEnabled(hasGLMdiChild);
+  rotateAct->setEnabled(hasGLMdiChild);
+  translateAct->setEnabled(hasGLMdiChild);
+  defaultViewAct->setEnabled(hasGLMdiChild);
   tileAct->setEnabled(hasGLMdiChild);
   cascadeAct->setEnabled(hasGLMdiChild);
   nextAct->setEnabled(hasGLMdiChild);
@@ -228,10 +232,11 @@ void STLViewer::updateWindowMenu() {
 GLMdiChild *STLViewer::createGLMdiChild() {
   GLMdiChild *child = new GLMdiChild;
   mdiArea->addSubWindow(child);
+  child->setLeftMouseButtonMode(leftMouseButtonMode_);
   connect(child, SIGNAL(mouseButtonPressed(Qt::MouseButtons)), this, SLOT(setMousePressEvent(Qt::MouseButtons)));
   connect(child, SIGNAL(mouseButtonReleased(Qt::MouseButtons)), this, SLOT(setMouseReleaseEvent(Qt::MouseButtons)));
   connect(this, SIGNAL(leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode)), child, SLOT(setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode)));
-
+  connect(child, SIGNAL(destroyed()), this, SLOT(closeEvent()));
   return child;
 }
 
@@ -250,6 +255,16 @@ void STLViewer::setMouseReleaseEvent(Qt::MouseButtons button) {
   } else if (button & Qt::MidButton) {
     if (leftMouseButtonMode_ != GLWidget::TRANSLATE)
       translateAct->setChecked(false);
+  }
+}
+
+void STLViewer::closeEvent() {
+  bool hasGLMdiChild = (activeGLMdiChild() != 0);
+  if (!hasGLMdiChild) {
+    translateAct->setChecked(false);
+    rotateAct->setChecked(false);
+    leftMouseButtonMode_ = GLWidget::INACTIVE;
+    emit leftMouseButtonModeChanged(leftMouseButtonMode_);
   }
 }
 
