@@ -67,6 +67,7 @@ class STLViewer : public QMainWindow {
   void setMouseReleaseEvent(Qt::MouseButtons button);
   GLMdiChild *createGLMdiChild();
   void setActiveSubWindow(QWidget *window);
+  void closeEvent();
 
  private:
 
@@ -106,7 +107,6 @@ class STLViewer : public QMainWindow {
   QAction *rotateAct;
   QAction *translateAct;
   QAction *defaultViewAct;
-  QAction *viewAct;
   QAction *exitAct;
   QAction *aboutAct;
 
