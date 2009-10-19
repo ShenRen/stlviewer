@@ -108,6 +108,11 @@ void STLViewer::saveAs() {
     statusBar()->showMessage(tr("File saved"), 2000);
 }
 
+void STLViewer::saveImage() {
+  if (activeGLMdiChild() && activeGLMdiChild()->saveImage())
+    statusBar()->showMessage(tr("Image saved"), 2000);
+}
+
 void STLViewer::rotate() {
   QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
   separatorAct->setVisible(!windows.isEmpty());
@@ -169,6 +174,7 @@ void STLViewer::updateMenus() {
   bool hasGLMdiChild = (activeGLMdiChild() != 0);
   saveAct->setEnabled(hasGLMdiChild);
   saveAsAct->setEnabled(hasGLMdiChild);
+  saveImageAct->setEnabled(hasGLMdiChild);
   closeAct->setEnabled(hasGLMdiChild);
   closeAllAct->setEnabled(hasGLMdiChild);
   tileAct->setEnabled(hasGLMdiChild);
@@ -269,6 +275,10 @@ void STLViewer::createActions() {
   saveAsAct->setStatusTip(tr("Save the document under a new name"));
   connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
+  saveImageAct = new QAction(tr("Save Image..."), this);
+  saveImageAct->setStatusTip(tr("Save the current view to disk"));
+  connect(saveImageAct, SIGNAL(triggered()), this, SLOT(saveImage()));
+
   closeAct = new QAction(tr("Cl&ose"), this);
   closeAct->setShortcut(tr("Ctrl+F4"));
   closeAct->setStatusTip(tr("Close the active window"));
@@ -340,6 +350,7 @@ void STLViewer::createMenus() {
   fileMenu->addAction(openAct);
   fileMenu->addAction(saveAct);
   fileMenu->addAction(saveAsAct);
+  fileMenu->addAction(saveImageAct);
   fileMenu->addSeparator();
   fileMenu->addAction(exitAct);
 
