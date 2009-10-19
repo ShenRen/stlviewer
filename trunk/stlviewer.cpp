@@ -327,7 +327,7 @@ void STLViewer::createActions() {
     this);
   panningAct->setStatusTip(tr("Drag the object around"));
   panningAct->setCheckable(true);
-  connect(panningAct, SIGNAL(triggered()), this, SLOT(pan()));
+  connect(panningAct, SIGNAL(triggered()), this, SLOT(panning()));
   panningAct->setChecked(false);
 
   zoomAct = new QAction(QIcon(":STLViewer/Images/magnifier_zoom_in.png"),
