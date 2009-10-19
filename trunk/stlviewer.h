@@ -59,7 +59,7 @@ class STLViewer : public QMainWindow {
   void rotate();
   void panning();
   void zoom();
-  void defaultView();
+  void unzoom();
   void backView();
   void frontView();
   void leftView();
@@ -112,7 +112,7 @@ class STLViewer : public QMainWindow {
   QAction *zoomAct;
   QAction *rotateAct;
   QAction *panningAct;
-  QAction *defaultViewAct;
+  QAction *unzoomAct;
   QAction *backViewAct;
   QAction *frontViewAct;
   QAction *leftViewAct;

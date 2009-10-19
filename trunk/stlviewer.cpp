@@ -140,8 +140,8 @@ void STLViewer::panning() {
 
 void STLViewer::zoom() {}
 
-void STLViewer::defaultView() {
-  activeGLMdiChild()->setDefaultCoordinates();
+void STLViewer::unzoom() {
+  activeGLMdiChild()->unzoom();
 }
 
 void STLViewer::backView() {
@@ -187,7 +187,7 @@ void STLViewer::updateMenus() {
   zoomAct->setEnabled(hasGLMdiChild);
   rotateAct->setEnabled(hasGLMdiChild);
   panningAct->setEnabled(hasGLMdiChild);
-  defaultViewAct->setEnabled(hasGLMdiChild);
+  unzoomAct->setEnabled(hasGLMdiChild);
   backViewAct->setEnabled(hasGLMdiChild);
   frontViewAct->setEnabled(hasGLMdiChild);
   leftViewAct->setEnabled(hasGLMdiChild);
@@ -374,12 +374,12 @@ void STLViewer::createActions() {
   zoomAct->setStatusTip(tr("Zoom in"));
   connect(zoomAct, SIGNAL(triggered()), this, SLOT(zoom()));
 
-  defaultViewAct =
+  unzoomAct =
     new QAction(QIcon(":STLViewer/Images/page_white_magnify.png"),
-      tr("&Default Zoom"), this);
-  defaultViewAct->setShortcut(tr("U"));
-  defaultViewAct->setStatusTip(tr("Zoom by default"));
-  connect(defaultViewAct, SIGNAL(triggered()), this, SLOT(defaultView()));
+      tr("&Unzoom"), this);
+  unzoomAct->setShortcut(tr("U"));
+  unzoomAct->setStatusTip(tr("Unzoom"));
+  connect(unzoomAct, SIGNAL(triggered()), this, SLOT(unzoom()));
 
   backViewAct =
     new QAction(QIcon(":STLViewer/Images/back_view.png"),
@@ -447,7 +447,7 @@ void STLViewer::createMenus() {
   viewMenu->addAction(rotateAct);
   viewMenu->addAction(panningAct);
   viewMenu->addAction(zoomAct);
-  viewMenu->addAction(defaultViewAct);
+  viewMenu->addAction(unzoomAct);
 
   defaultViewsMenu = viewMenu->addMenu(tr("&Default Views"));
   defaultViewsMenu->addAction(backViewAct);
@@ -480,7 +480,7 @@ void STLViewer::createToolBars() {
   viewToolBar->addAction(rotateAct);
   viewToolBar->addAction(panningAct);
   viewToolBar->addAction(zoomAct);
-  viewToolBar->addAction(defaultViewAct);
+  viewToolBar->addAction(unzoomAct);
   viewToolBar->addAction(backViewAct);
   viewToolBar->addAction(frontViewAct);
   viewToolBar->addAction(leftViewAct);
