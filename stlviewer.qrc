@@ -7,5 +7,12 @@
         <file>Images/arrow_rotate_clockwise.png</file>
         <file>Images/page_white_magnify.png</file>
         <file>Images/magnifier_zoom_in.png</file>
+        <file>Images/back_view.png</file>
+        <file>Images/bottom_view.png</file>
+        <file>Images/front_view.png</file>
+        <file>Images/left_view.png</file>
+        <file>Images/right_view.png</file>
+        <file>Images/top_view.png</file>
+        <file>Images/top_front_left_view.png</file>
     </qresource>
 </RCC>

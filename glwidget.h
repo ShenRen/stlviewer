@@ -43,6 +43,13 @@ class GLWidget : public QGLWidget {
   void makeObjectFromStlFile(StlFile*);
   void deleteObject();
   void setDefaultCoordinates();
+  void setBackView();
+  void setFrontView();
+  void setLeftView();
+  void setRightView();
+  void setTopView();
+  void setBottomView();
+  void setTopFrontLeftView();
 
  public slots:
   void setXRotation(int angle);
