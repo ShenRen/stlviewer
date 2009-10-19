@@ -23,7 +23,7 @@
 
 #include <QtOpenGL/QGLWidget>
 
-class Entity;
+class StlFile;
 class MdiChild;
 
 class GLWidget : public QGLWidget {
@@ -31,20 +31,18 @@ class GLWidget : public QGLWidget {
   Q_OBJECT
 
  public:
-  GLWidget(QWidget *parent = 0);
-  ~GLWidget();
-  void makeObjectFromEntity(Entity*);
-  void deleteObject();
-
-  QSize minimumSizeHint() const;
-  QSize sizeHint() const;
-  void setDefaultCoordinates();
-
   enum LeftMouseButtonMode {
     INACTIVE,
     ROTATE,
-    TRANSLATE
+    PANNING
   };
+  GLWidget(QWidget *parent = 0);
+  ~GLWidget();
+  QSize minimumSizeHint() const;
+  QSize sizeHint() const;
+  void makeObjectFromStlFile(StlFile*);
+  void deleteObject();
+  void setDefaultCoordinates();
 
  public slots:
   void setXRotation(int angle);
@@ -64,8 +62,8 @@ class GLWidget : public QGLWidget {
   void zoomChanged(float zoom);
 
  protected:
-  void paintGL();
   void initializeGL();
+  void paintGL();
   void resizeGL(int width, int height);
   void mousePressEvent(QMouseEvent *event);
   void mouseReleaseEvent(QMouseEvent *event);
@@ -73,22 +71,19 @@ class GLWidget : public QGLWidget {
   void wheelEvent(QWheelEvent *event);
 
  private:
-  void triangle(GLdouble, GLdouble, GLdouble, GLdouble,
-             GLdouble, GLdouble, GLdouble, GLdouble, GLdouble);
-  void extrude(GLdouble x1, GLdouble y1, GLdouble x2, GLdouble y2);
+  void triangle(GLdouble, GLdouble, GLdouble, GLdouble, GLdouble, GLdouble,
+                GLdouble, GLdouble, GLdouble);
   void normalizeAngle(int *angle);
   void drawAxes();
   void updateCursor();
-
   //GLfloat panMatrix[16];
   GLuint object;
-  LeftMouseButtonMode leftMouseButtonMode_;
+  LeftMouseButtonMode leftMouseButtonMode;
   int xRot, yRot, zRot;
   int xPos, yPos, zPos;
   float xTrans, yTrans, zTrans;
   float zNear, zFar;
   float left, right, top, bottom;
-  int scale;
   float zoomFactor;
   float zoomInc;
   float defaultZoomFactor;

@@ -30,29 +30,25 @@
 
 STLViewer::STLViewer(QWidget *parent, Qt::WFlags flags)
     : QMainWindow(parent, flags) {
-
   mdiArea = new QMdiArea;
   mdiArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   mdiArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   setCentralWidget(mdiArea);
-
   connect(mdiArea, SIGNAL(subWindowActivated(QMdiSubWindow *)),
        this, SLOT(updateMenus()));
   windowMapper = new QSignalMapper(this);
   connect(windowMapper, SIGNAL(mapped(QWidget *)),
        this, SLOT(setActiveSubWindow(QWidget *)));
-
   createActions();
   createMenus();
   createToolBars();
   createStatusBar();
   createDockWindows();
   updateMenus();
-
+  // Read persistent application settings
   readSettings();
-
-  leftMouseButtonMode_ = GLWidget::INACTIVE;
-
+  // Deactivate the left mouse button when manipulating objects
+  leftMouseButtonMode = GLWidget::INACTIVE;
   setWindowTitle(tr("STLViewer"));
   setUnifiedTitleAndToolBarOnMac(true);
 }
@@ -73,14 +69,15 @@ void STLViewer::newFile() {
   GLMdiChild *child = createGLMdiChild();
   child->newFile();
   child->show();
-
+  // Reset all informations
   dimensionsGroupBox->reset();
   meshInformationGroupBox->reset();
   propertiesGroupBox->reset();
 }
 
 void STLViewer::open() {
-  QString fileName = QFileDialog::getOpenFileName(this, tr("Open a file"), curDir, tr("STL Files (*.stl);;All Files (*.*)"));
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open a file"),
+    curDir, tr("STL Files (*.stl);;All Files (*.*)"));
   if (!fileName.isEmpty()) {
     curDir = QFileInfo(fileName).filePath();
     QMdiSubWindow *existing = findGLMdiChild(fileName);
@@ -118,45 +115,27 @@ void STLViewer::rotate() {
   separatorAct->setVisible(!windows.isEmpty());
   if (rotateAct->isChecked()) {
     rotateAct->setChecked(true);
-    translateAct->setChecked(false);
-    leftMouseButtonMode_ = GLWidget::ROTATE;
-    /*for (int i = 0; i < windows.size(); ++i) {
-      GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
-      child->setRotationMode(true);
-      child->setTranslationMode(false);
-    }*/
+    panningAct->setChecked(false);
+    leftMouseButtonMode = GLWidget::ROTATE;
   } else {
     rotateAct->setChecked(false);
-    leftMouseButtonMode_ = GLWidget::INACTIVE;
-    /*for (int i = 0; i < windows.size(); ++i) {
-      GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
-      child->setRotationMode(false);
-    }*/
+    leftMouseButtonMode = GLWidget::INACTIVE;
   }
-  emit leftMouseButtonModeChanged(leftMouseButtonMode_);
+  emit leftMouseButtonModeChanged(leftMouseButtonMode);
 }
 
-void STLViewer::translate() {
+void STLViewer::panning() {
   QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
   separatorAct->setVisible(!windows.isEmpty());
-  if (translateAct->isChecked()) {
-    translateAct->setChecked(true);
+  if (panningAct->isChecked()) {
+    panningAct->setChecked(true);
     rotateAct->setChecked(false);
-    leftMouseButtonMode_ = GLWidget::TRANSLATE;
-    /*for (int i = 0; i < windows.size(); ++i) {
-      GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
-      child->setTranslationMode(true);
-      child->setRotationMode(false);
-    }*/
+    leftMouseButtonMode = GLWidget::PANNING;
   } else {
-    translateAct->setChecked(false);
-    leftMouseButtonMode_ = GLWidget::INACTIVE;
-    /*for (int i = 0; i < windows.size(); ++i) {
-      GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
-      child->setTranslationMode(false);
-    }*/
+    panningAct->setChecked(false);
+    leftMouseButtonMode = GLWidget::INACTIVE;
   }
-  emit leftMouseButtonModeChanged(leftMouseButtonMode_);
+  emit leftMouseButtonModeChanged(leftMouseButtonMode);
 }
 
 void STLViewer::zoom() {}
@@ -179,7 +158,7 @@ void STLViewer::updateMenus() {
   closeAllAct->setEnabled(hasGLMdiChild);
   zoomAct->setEnabled(hasGLMdiChild);
   rotateAct->setEnabled(hasGLMdiChild);
-  translateAct->setEnabled(hasGLMdiChild);
+  panningAct->setEnabled(hasGLMdiChild);
   defaultViewAct->setEnabled(hasGLMdiChild);
   tileAct->setEnabled(hasGLMdiChild);
   cascadeAct->setEnabled(hasGLMdiChild);
@@ -208,13 +187,10 @@ void STLViewer::updateWindowMenu() {
   windowMenu->addAction(nextAct);
   windowMenu->addAction(previousAct);
   windowMenu->addAction(separatorAct);
-
   QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
   separatorAct->setVisible(!windows.isEmpty());
-
   for (int i = 0; i < windows.size(); ++i) {
     GLMdiChild *child = qobject_cast<GLMdiChild *>(windows.at(i)->widget());
-
     QString text;
     if (i < 9) {
       text = tr("&%1 %2").arg(i + 1).arg(child->userFriendlyCurrentFile());
@@ -229,58 +205,69 @@ void STLViewer::updateWindowMenu() {
   }
 }
 
-GLMdiChild *STLViewer::createGLMdiChild() {
-  GLMdiChild *child = new GLMdiChild;
-  mdiArea->addSubWindow(child);
-  child->setLeftMouseButtonMode(leftMouseButtonMode_);
-  connect(child, SIGNAL(mouseButtonPressed(Qt::MouseButtons)), this, SLOT(setMousePressEvent(Qt::MouseButtons)));
-  connect(child, SIGNAL(mouseButtonReleased(Qt::MouseButtons)), this, SLOT(setMouseReleaseEvent(Qt::MouseButtons)));
-  connect(this, SIGNAL(leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode)), child, SLOT(setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode)));
-  connect(child, SIGNAL(destroyed()), this, SLOT(closeEvent()));
-  return child;
-}
-
-void STLViewer::setMousePressEvent(Qt::MouseButtons button) {
+void STLViewer::setMousePressed(Qt::MouseButtons button) {
   if (button & Qt::RightButton) {
     rotateAct->setChecked(true);
   } else if (button & Qt::MidButton) {
-    translateAct->setChecked(true);
+    panningAct->setChecked(true);
   }
 }
 
-void STLViewer::setMouseReleaseEvent(Qt::MouseButtons button) {
+void STLViewer::setMouseReleased(Qt::MouseButtons button) {
   if (button & Qt::RightButton) {
-    if (leftMouseButtonMode_ != GLWidget::ROTATE)
+    if (leftMouseButtonMode != GLWidget::ROTATE)
       rotateAct->setChecked(false);
   } else if (button & Qt::MidButton) {
-    if (leftMouseButtonMode_ != GLWidget::TRANSLATE)
-      translateAct->setChecked(false);
+    if (leftMouseButtonMode != GLWidget::PANNING)
+      panningAct->setChecked(false);
   }
 }
 
-void STLViewer::closeEvent() {
-  bool hasGLMdiChild = (activeGLMdiChild() != 0);
-  if (!hasGLMdiChild) {
-    translateAct->setChecked(false);
+GLMdiChild *STLViewer::createGLMdiChild() {
+  GLMdiChild *child = new GLMdiChild;
+  mdiArea->addSubWindow(child);
+  child->setLeftMouseButtonMode(leftMouseButtonMode);
+  connect(child, SIGNAL(mouseButtonPressed(Qt::MouseButtons)), this,
+    SLOT(setMousePressed(Qt::MouseButtons)));
+  connect(child, SIGNAL(mouseButtonReleased(Qt::MouseButtons)), this,
+    SLOT(setMouseReleased(Qt::MouseButtons)));
+  connect(this,
+    SIGNAL(leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode)), child,
+    SLOT(setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode)));
+  connect(child, SIGNAL(destroyed()), this, SLOT(destroyGLMdiChild()));
+  return child;
+}
+
+void STLViewer::setActiveSubWindow(QWidget *window) {
+  if (!window)
+    return;
+  mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
+}
+
+void STLViewer::destroyGLMdiChild() {
+  if (activeGLMdiChild() == 0) {
+    panningAct->setChecked(false);
     rotateAct->setChecked(false);
-    leftMouseButtonMode_ = GLWidget::INACTIVE;
-    emit leftMouseButtonModeChanged(leftMouseButtonMode_);
+    leftMouseButtonMode = GLWidget::INACTIVE;
+    emit leftMouseButtonModeChanged(leftMouseButtonMode);
   }
 }
 
 void STLViewer::createActions() {
-
-  newAct = new QAction(QIcon(":STLViewer/Images/page_white.png"), tr("&New"), this);
+  newAct = new QAction(QIcon(":STLViewer/Images/page_white.png"), tr("&New"),
+    this);
   newAct->setShortcuts(QKeySequence::New);
   newAct->setStatusTip(tr("Create a new file"));
   connect(newAct, SIGNAL(triggered()), this, SLOT(newFile()));
 
-  openAct = new QAction(QIcon(":STLViewer/Images/folder.png"), tr("&Open..."), this);
+  openAct = new QAction(QIcon(":STLViewer/Images/folder.png"), tr("&Open..."),
+    this);
   openAct->setShortcuts(QKeySequence::Open);
   openAct->setStatusTip(tr("Open an existing file"));
   connect(openAct, SIGNAL(triggered()), this, SLOT(open()));
 
-  saveAct = new QAction(QIcon(":STLViewer/Images/disk.png"), tr("&Save"), this);
+  saveAct = new QAction(QIcon(":STLViewer/Images/disk.png"), tr("&Save"),
+    this);
   saveAct->setShortcuts(QKeySequence::Save);
   saveAct->setStatusTip(tr("Save the document to disk"));
   connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
@@ -329,23 +316,28 @@ void STLViewer::createActions() {
   separatorAct = new QAction(this);
   separatorAct->setSeparator(true);
 
-  rotateAct = new QAction(QIcon(":STLViewer/Images/arrow_rotate_clockwise.png"), tr("&Rotation"), this);
+  rotateAct = new QAction(QIcon(":STLViewer/Images/arrow_rotate_clockwise.png"),
+    tr("&Rotate"), this);
   rotateAct->setStatusTip(tr("Rotate the object"));
   rotateAct->setCheckable(true);
   connect(rotateAct, SIGNAL(triggered()), this, SLOT(rotate()));
   rotateAct->setChecked(false);
     
-  translateAct = new QAction(QIcon(":STLViewer/Images/arrow_out.png"), tr("&Panning"), this);
-  translateAct->setStatusTip(tr("Drag the object around"));
-  translateAct->setCheckable(true);
-  connect(translateAct, SIGNAL(triggered()), this, SLOT(translate()));
-  translateAct->setChecked(false);
+  panningAct = new QAction(QIcon(":STLViewer/Images/arrow_out.png"), tr("&Pan"),
+    this);
+  panningAct->setStatusTip(tr("Drag the object around"));
+  panningAct->setCheckable(true);
+  connect(panningAct, SIGNAL(triggered()), this, SLOT(pan()));
+  panningAct->setChecked(false);
 
-  zoomAct = new QAction(QIcon(":STLViewer/Images/magnifier_zoom_in.png"), tr("&Zoom In"), this);
+  zoomAct = new QAction(QIcon(":STLViewer/Images/magnifier_zoom_in.png"),
+    tr("&Zoom In"), this);
   zoomAct->setStatusTip(tr("Zoom in"));
   connect(zoomAct, SIGNAL(triggered()), this, SLOT(zoom()));
 
-  defaultViewAct = new QAction(QIcon(":STLViewer/Images/page_white_magnify.png"), tr("&Default Zoom"), this);
+  defaultViewAct =
+    new QAction(QIcon(":STLViewer/Images/page_white_magnify.png"),
+      tr("&Default Zoom"), this);
   defaultViewAct->setStatusTip(tr("Zoom by default"));
   connect(defaultViewAct, SIGNAL(triggered()), this, SLOT(defaultView()));
 
@@ -371,7 +363,7 @@ void STLViewer::createMenus() {
 
   viewMenu = menuBar()->addMenu(tr("&View"));
   viewMenu->addAction(rotateAct);
-  viewMenu->addAction(translateAct);
+  viewMenu->addAction(panningAct);
   viewMenu->addAction(zoomAct);
   viewMenu->addAction(defaultViewAct);
   viewMenu->addSeparator();
@@ -394,13 +386,38 @@ void STLViewer::createToolBars() {
 
   viewToolBar = addToolBar(tr("View"));
   viewToolBar->addAction(rotateAct);
-  viewToolBar->addAction(translateAct);
+  viewToolBar->addAction(panningAct);
   viewToolBar->addAction(zoomAct);
   viewToolBar->addAction(defaultViewAct);
 }
 
 void STLViewer::createStatusBar() {
   statusBar()->showMessage(tr("Ready"));
+}
+
+void STLViewer::createDockWindows() {
+  // Create a DockWidget named "Informations"
+  QDockWidget *dock = new QDockWidget(tr("Informations"), this);
+  dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  // Create one GroupBox for each type of data
+  dimensionsGroupBox = new DimensionsGroupBox(this);
+  meshInformationGroupBox = new MeshInformationGroupBox(this);
+  propertiesGroupBox = new PropertiesGroupBox(this);
+  // Create a layout inside a widget to display all GroupBoxes in one layout
+  QWidget *wi = new QWidget;
+  QVBoxLayout *layout = new QVBoxLayout;
+  layout->addWidget(dimensionsGroupBox);
+  layout->addWidget(meshInformationGroupBox);
+  layout->addWidget(propertiesGroupBox);
+  wi->setLayout(layout);
+  wi->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
+                                QSizePolicy::Fixed));
+  // Embed the widget that contains all GroupBoxes into the DockWidget
+  dock->setWidget(wi);
+  // Add the DockWidget at the right side of the main layout
+  addDockWidget(Qt::RightDockWidgetArea, dock);
+  // Add a button in the view menu to show/hide the DockWidget
+  viewMenu->addAction(dock->toggleViewAction());
 }
 
 void STLViewer::readSettings() {
@@ -434,34 +451,5 @@ QMdiSubWindow *STLViewer::findGLMdiChild(const QString &fileName) {
       return window;
   }
   return 0;
-}
-
-void STLViewer::setActiveSubWindow(QWidget *window) {
-  if (!window)
-    return;
-  mdiArea->setActiveSubWindow(qobject_cast<QMdiSubWindow *>(window));
-}
-
-void STLViewer::createDockWindows() {
-  QDockWidget *dock = new QDockWidget(tr("Informations"), this);
-  dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-
-  dimensionsGroupBox = new DimensionsGroupBox(this);
-  meshInformationGroupBox = new MeshInformationGroupBox(this);
-  propertiesGroupBox = new PropertiesGroupBox(this);
-
-  QWidget *wi = new QWidget;
-  QVBoxLayout *layout = new QVBoxLayout;
-
-  layout->addWidget(dimensionsGroupBox);
-  layout->addWidget(meshInformationGroupBox);
-  layout->addWidget(propertiesGroupBox);
-
-  wi->setLayout(layout);
-  wi->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed));
-  dock->setWidget(wi);
-
-  addDockWidget(Qt::RightDockWidgetArea, dock);
-  viewMenu->addAction(dock->toggleViewAction());
 }
 

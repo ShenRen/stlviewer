@@ -22,10 +22,9 @@
 #include <QtGui/QApplication>
 
 int main(int argc, char *argv[]) {
-    Q_INIT_RESOURCE(stlviewer);
-
-    QApplication a(argc, argv);
-    STLViewer w;
-    w.show();
-    return a.exec();
+  Q_INIT_RESOURCE(stlviewer);
+  QApplication a(argc, argv);
+  STLViewer w;
+  w.show();
+  return a.exec();
 }

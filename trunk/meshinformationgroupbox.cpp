@@ -26,31 +26,31 @@ MeshInformationGroupBox::MeshInformationGroupBox(QWidget *parent)
     : QGroupBox(tr("Mesh Information"), parent) {
 
   QGridLayout *layout = new QGridLayout;
-
+  // Write labels and values
   layout->addWidget(new QLabel("# Facets:"), 0, 0);
-  num_facets = new QLabel("");
-  num_facets->setAlignment(Qt::AlignRight);
-  layout->addWidget(num_facets, 0, 1);
+  numFacets = new QLabel("");
+  numFacets->setAlignment(Qt::AlignRight);
+  layout->addWidget(numFacets, 0, 1);
   layout->addWidget(new QLabel("# Points:"), 1, 0);
-  num_points = new QLabel("");
-  num_points->setAlignment(Qt::AlignRight);
-  layout->addWidget(num_points, 1, 1);
-
+  numPoints = new QLabel("");
+  numPoints->setAlignment(Qt::AlignRight);
+  layout->addWidget(numPoints, 1, 1);
   setLayout(layout);
 }
 
 MeshInformationGroupBox::~MeshInformationGroupBox() {}
 
 void MeshInformationGroupBox::reset() {
-  num_facets->setText("");
-  num_points->setText("");
+  // Reset values
+  numFacets->setText("");
+  numPoints->setText("");
 }
 
-void MeshInformationGroupBox::setValues(const Entity::Stats stats) {
+void MeshInformationGroupBox::setValues(const StlFile::Stats stats) {
   QString data;
-
-  data.setNum(stats.num_facets);
-  num_facets->setText(data);
-  data.setNum(stats.num_points);
-  num_points->setText(data);
+  // Write values contained in stats
+  data.setNum(stats.numFacets);
+  numFacets->setText(data);
+  data.setNum(stats.numPoints);
+  numPoints->setText(data);
 }

@@ -57,34 +57,32 @@ class STLViewer : public QMainWindow {
   void saveAs();
   void saveImage();
   void rotate();
-  void translate();
+  void panning();
   void zoom();
   void defaultView();
   void about();
   void updateMenus();
   void updateWindowMenu();
-  void setMousePressEvent(Qt::MouseButtons button);
-  void setMouseReleaseEvent(Qt::MouseButtons button);
+  void setMousePressed(Qt::MouseButtons button);
+  void setMouseReleased(Qt::MouseButtons button);
   GLMdiChild *createGLMdiChild();
   void setActiveSubWindow(QWidget *window);
-  void closeEvent();
+  void destroyGLMdiChild();
 
  private:
-
   void createActions();
   void createMenus();
   void createToolBars();
   void createStatusBar();
   void createDockWindows();
+  // Reads persistent platform-independent application settings
   void readSettings();
+  // Writes persistent platform-independent application settings
   void writeSettings();
-
   GLMdiChild *activeGLMdiChild();
   QMdiSubWindow *findGLMdiChild(const QString &fileName);
-
   QMdiArea *mdiArea;
   QSignalMapper *windowMapper;
-
   QMenu *fileMenu;
   QMenu *windowMenu;
   QMenu *viewMenu;
@@ -105,15 +103,12 @@ class STLViewer : public QMainWindow {
   QAction *separatorAct;
   QAction *zoomAct;
   QAction *rotateAct;
-  QAction *translateAct;
+  QAction *panningAct;
   QAction *defaultViewAct;
   QAction *exitAct;
   QAction *aboutAct;
-
   QString curDir;
-
-  GLWidget::LeftMouseButtonMode leftMouseButtonMode_;
-
+  GLWidget::LeftMouseButtonMode leftMouseButtonMode;
   DimensionsGroupBox *dimensionsGroupBox;
   MeshInformationGroupBox *meshInformationGroupBox;
   PropertiesGroupBox *propertiesGroupBox;
