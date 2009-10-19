@@ -112,6 +112,55 @@ void GLWidget::setDefaultCoordinates() {
   updateGL();
 }
 
+void GLWidget::setBackView() {
+  makeCurrent();
+  setXRotation(270*16);
+  setYRotation(0);
+  setZRotation(180*16);
+}
+
+void GLWidget::setFrontView() {
+  makeCurrent();
+  setXRotation(270*16);
+  setYRotation(0);
+  setZRotation(0);
+}
+
+void GLWidget::setLeftView() {
+  makeCurrent();
+  setXRotation(270*16);
+  setYRotation(0);
+  setZRotation(90*16);
+}
+
+void GLWidget::setRightView() {
+  makeCurrent();
+  setXRotation(270*16);
+  setYRotation(0);
+  setZRotation(270*16);
+}
+
+void GLWidget::setTopView() {
+  makeCurrent();
+  setXRotation(0);
+  setYRotation(0);
+  setZRotation(0);
+}
+
+void GLWidget::setBottomView() {
+  makeCurrent();
+  setXRotation(0);
+  setYRotation(180*16);
+  setZRotation(0);
+}
+
+void GLWidget::setTopFrontLeftView() {
+  makeCurrent();
+  setXRotation(315*16);
+  setYRotation(0);
+  setZRotation(45*16);
+}
+
 void GLWidget::setXRotation(int angle) {
   normalizeAngle(&angle);
   if (angle != xRot) {

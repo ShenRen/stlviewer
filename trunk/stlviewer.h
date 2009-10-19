@@ -60,6 +60,13 @@ class STLViewer : public QMainWindow {
   void panning();
   void zoom();
   void defaultView();
+  void backView();
+  void frontView();
+  void leftView();
+  void rightView();
+  void topView();
+  void bottomView();
+  void topFrontLeftView();
   void about();
   void updateMenus();
   void updateWindowMenu();
@@ -86,6 +93,7 @@ class STLViewer : public QMainWindow {
   QMenu *fileMenu;
   QMenu *windowMenu;
   QMenu *viewMenu;
+  QMenu *defaultViewsMenu;
   QMenu *helpMenu;
   QToolBar *fileToolBar;
   QToolBar *viewToolBar;
@@ -105,6 +113,13 @@ class STLViewer : public QMainWindow {
   QAction *rotateAct;
   QAction *panningAct;
   QAction *defaultViewAct;
+  QAction *backViewAct;
+  QAction *frontViewAct;
+  QAction *leftViewAct;
+  QAction *rightViewAct;
+  QAction *topViewAct;
+  QAction *bottomViewAct;
+  QAction *topFrontLeftViewAct;
   QAction *exitAct;
   QAction *aboutAct;
   QString curDir;

@@ -144,6 +144,34 @@ void STLViewer::defaultView() {
   activeGLMdiChild()->setDefaultCoordinates();
 }
 
+void STLViewer::backView() {
+  activeGLMdiChild()->setBackView();
+}
+
+void STLViewer::frontView() {
+  activeGLMdiChild()->setFrontView();
+}
+
+void STLViewer::leftView() {
+  activeGLMdiChild()->setLeftView();
+}
+
+void STLViewer::rightView() {
+  activeGLMdiChild()->setRightView();
+}
+
+void STLViewer::topView() {
+  activeGLMdiChild()->setTopView();
+}
+
+void STLViewer::bottomView() {
+  activeGLMdiChild()->setBottomView();
+}
+
+void STLViewer::topFrontLeftView() {
+  activeGLMdiChild()->setTopFrontLeftView();
+}
+
 void STLViewer::about() {
   QMessageBox::about(this, tr("About STLViewer"),
     tr("<a href=\"http://www.cravesoft.com\">www.cravesoft.com</b>"));
@@ -160,6 +188,13 @@ void STLViewer::updateMenus() {
   rotateAct->setEnabled(hasGLMdiChild);
   panningAct->setEnabled(hasGLMdiChild);
   defaultViewAct->setEnabled(hasGLMdiChild);
+  backViewAct->setEnabled(hasGLMdiChild);
+  frontViewAct->setEnabled(hasGLMdiChild);
+  leftViewAct->setEnabled(hasGLMdiChild);
+  rightViewAct->setEnabled(hasGLMdiChild);
+  topViewAct->setEnabled(hasGLMdiChild);
+  bottomViewAct->setEnabled(hasGLMdiChild);
+  topFrontLeftViewAct->setEnabled(hasGLMdiChild);
   tileAct->setEnabled(hasGLMdiChild);
   cascadeAct->setEnabled(hasGLMdiChild);
   nextAct->setEnabled(hasGLMdiChild);
@@ -341,6 +376,48 @@ void STLViewer::createActions() {
   defaultViewAct->setStatusTip(tr("Zoom by default"));
   connect(defaultViewAct, SIGNAL(triggered()), this, SLOT(defaultView()));
 
+  backViewAct =
+    new QAction(QIcon(":STLViewer/Images/back_view.png"),
+      tr("&Back View"), this);
+  backViewAct->setStatusTip(tr("Back view"));
+  connect(backViewAct, SIGNAL(triggered()), this, SLOT(backView()));
+
+  frontViewAct =
+    new QAction(QIcon(":STLViewer/Images/front_view.png"),
+      tr("&Front View"), this);
+  frontViewAct->setStatusTip(tr("Front view"));
+  connect(frontViewAct, SIGNAL(triggered()), this, SLOT(frontView()));
+
+  leftViewAct =
+    new QAction(QIcon(":STLViewer/Images/left_view.png"),
+      tr("&Left View"), this);
+  leftViewAct->setStatusTip(tr("Left view"));
+  connect(leftViewAct, SIGNAL(triggered()), this, SLOT(leftView()));
+
+  rightViewAct =
+    new QAction(QIcon(":STLViewer/Images/right_view.png"),
+      tr("&Right View"), this);
+  rightViewAct->setStatusTip(tr("Right view"));
+  connect(rightViewAct, SIGNAL(triggered()), this, SLOT(rightView()));
+
+  topViewAct =
+    new QAction(QIcon(":STLViewer/Images/top_view.png"),
+      tr("&Top View"), this);
+  topViewAct->setStatusTip(tr("Top view"));
+  connect(topViewAct, SIGNAL(triggered()), this, SLOT(topView()));
+
+  bottomViewAct =
+    new QAction(QIcon(":STLViewer/Images/bottom_view.png"),
+      tr("&Bottom View"), this);
+  bottomViewAct->setStatusTip(tr("Bottom view"));
+  connect(bottomViewAct, SIGNAL(triggered()), this, SLOT(bottomView()));
+
+  topFrontLeftViewAct =
+    new QAction(QIcon(":STLViewer/Images/top_front_left_view.png"),
+      tr("&Top Front Left View"), this);
+  topFrontLeftViewAct->setStatusTip(tr("Top Front Left view"));
+  connect(topFrontLeftViewAct, SIGNAL(triggered()), this, SLOT(topFrontLeftView()));
+
   exitAct = new QAction(tr("E&xit"), this);
   exitAct->setShortcut(tr("Ctrl+Q"));
   exitAct->setStatusTip(tr("Exit the application"));
@@ -366,6 +443,16 @@ void STLViewer::createMenus() {
   viewMenu->addAction(panningAct);
   viewMenu->addAction(zoomAct);
   viewMenu->addAction(defaultViewAct);
+
+  defaultViewsMenu = viewMenu->addMenu(tr("&Default Views"));
+  defaultViewsMenu->addAction(backViewAct);
+  defaultViewsMenu->addAction(frontViewAct);
+  defaultViewsMenu->addAction(leftViewAct);
+  defaultViewsMenu->addAction(rightViewAct);
+  defaultViewsMenu->addAction(topViewAct);
+  defaultViewsMenu->addAction(bottomViewAct);
+  defaultViewsMenu->addAction(topFrontLeftViewAct);
+
   viewMenu->addSeparator();
 
   windowMenu = menuBar()->addMenu(tr("&Window"));
@@ -389,6 +476,13 @@ void STLViewer::createToolBars() {
   viewToolBar->addAction(panningAct);
   viewToolBar->addAction(zoomAct);
   viewToolBar->addAction(defaultViewAct);
+  viewToolBar->addAction(backViewAct);
+  viewToolBar->addAction(frontViewAct);
+  viewToolBar->addAction(leftViewAct);
+  viewToolBar->addAction(rightViewAct);
+  viewToolBar->addAction(topViewAct);
+  viewToolBar->addAction(bottomViewAct);
+  viewToolBar->addAction(topFrontLeftViewAct);
 }
 
 void STLViewer::createStatusBar() {
