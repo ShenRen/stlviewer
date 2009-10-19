@@ -22,36 +22,31 @@
 
 #include "glmdichild.h"
 
-GLMdiChild::GLMdiChild(QWidget *parent)
-    : GLWidget(parent) {
-  entity_ = new Entity;
-
+GLMdiChild::GLMdiChild(QWidget *parent) : GLWidget(parent) {
+  stlFile = new StlFile;
   setAttribute(Qt::WA_DeleteOnClose);
   isUntitled = true;
 }
 
 GLMdiChild::~GLMdiChild() {
-  delete entity_;
+  delete stlFile;
 }
 
 void GLMdiChild::newFile() {
   static int sequenceNumber = 1;
-
   isUntitled = true;
   curFile = tr("untitled%1.stl").arg(sequenceNumber++);
   setWindowTitle(curFile);
 }
 
 bool GLMdiChild::loadFile(const QString &fileName) {
-
+  // Open the file and make an object from its content
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  entity_->open(fileName.toStdString());
-  makeObjectFromEntity(entity_);
+  stlFile->open(fileName.toStdString());
+  makeObjectFromStlFile(stlFile);
   QApplication::restoreOverrideCursor();
-
   updateGL();
   setCurrentFile(fileName);
-
   return true;
 }
 
@@ -68,23 +63,29 @@ bool GLMdiChild::saveAs() {
   QString filterAscii = tr("STL Files, ASCII (*.stl)");
   QString filterAll = tr("All files (*.*)");
   QString filterSel;
-  if (entity_->stats().type == Entity::ASCII)
+  // Set the current file type as default
+  if (stlFile->getStats().type == StlFile::ASCII)
     filterSel = filterAscii;
   else
     filterSel = filterBin;
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"), curFile, filterBin + ";;" + filterAscii + ";;" + filterAll, &filterSel);
+  QString fileName = QFileDialog::getSaveFileName(
+      this, tr("Save As"), curFile,
+      filterBin + ";;" + filterAscii + ";;" + filterAll, &filterSel);
   if (fileName.isEmpty())
     return false;
+  // Change the current file type to the one chosen by the user
   if (filterSel == filterBin)
-    entity_->setFormat(Entity::BINARY);
+    stlFile->setFormat(StlFile::BINARY);
   else if (filterSel == filterAscii)
-    entity_->setFormat(Entity::ASCII);
+    stlFile->setFormat(StlFile::ASCII);
+  // Save the file
   return saveFile(fileName);
 }
 
 bool GLMdiChild::saveFile(const QString &fileName) {
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  entity_->write(fileName.toStdString());
+  // Write the current object into a file
+  stlFile->write(fileName.toStdString());
   QApplication::restoreOverrideCursor();
   setCurrentFile(fileName);
   return true;
@@ -96,11 +97,13 @@ bool GLMdiChild::saveImage() {
   QString filterPng = tr("PNG Files (*.png)");
   QString filterBmp = tr("BMP Files (*.bmp)");
   QString filterAll = tr("All files (*.*)");
-  QString filterSel = filterPng;
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"), imFile, filterPng + ";;" + filterBmp + ";;" + filterAll, &filterSel);
+  QString filterSel = filterPng;  // Default image type is PNG
+  QString fileName = QFileDialog::getSaveFileName(
+      this, tr("Save Image"), imFile,
+      filterPng + ";;" + filterBmp + ";;" + filterAll, &filterSel);
   if (fileName.isEmpty())
     return false;
-  QString format = "png";
+  QString format = "png";  // Default image type is PNG if none was specified
   if (filterSel == filterBmp || QFileInfo(fileName).suffix() == ".bmp")
     format = "bmp";  
   QApplication::setOverrideCursor(Qt::WaitCursor);
@@ -115,7 +118,7 @@ QString GLMdiChild::userFriendlyCurrentFile() {
 }
 
 void GLMdiChild::closeEvent(QCloseEvent *event) {
-  entity_->close();
+  stlFile->close();
   if (maybeSave()) {
     event->accept();
   } else {
@@ -123,28 +126,29 @@ void GLMdiChild::closeEvent(QCloseEvent *event) {
   }
 }
 
-void GLMdiChild::setCurrentFile(const QString &fileName) {
-  curFile = QFileInfo(fileName).canonicalFilePath();
-  isUntitled = false;
-  setWindowModified(false);
-  //setWindowTitle(tr("%1[*] - %2").arg(userFriendlyCurrentFile()).arg(tr("STLViewer")));
-  setWindowTitle(userFriendlyCurrentFile() + "[*]");
+void GLMdiChild::mousePressEvent(QMouseEvent *event) {
+  // Emit a signal if a mouse button is pressed on this widget
+  emit mouseButtonPressed(event->buttons());
+  GLWidget::mousePressEvent(event);
 }
 
-QString GLMdiChild::strippedName(const QString &fullFileName) {
-   return QFileInfo(fullFileName).fileName();
+void GLMdiChild::mouseReleaseEvent(QMouseEvent *event) {
+  // Emit a signal if a mouse button is released on this widget
+  emit mouseButtonReleased(event->button());
+  GLWidget::mouseReleaseEvent(event);
 }
 
 bool GLMdiChild::maybeSave() {
   return true;
 }
 
-void GLMdiChild::mousePressEvent(QMouseEvent *event) {
-  emit mouseButtonPressed(event->buttons());
-  GLWidget::mousePressEvent(event);
+void GLMdiChild::setCurrentFile(const QString &fileName) {
+  curFile = QFileInfo(fileName).canonicalFilePath();
+  isUntitled = false;
+  setWindowModified(false);
+  setWindowTitle(userFriendlyCurrentFile() + "[*]");
 }
 
-void GLMdiChild::mouseReleaseEvent(QMouseEvent *event) {
-  emit mouseButtonReleased(event->button());
-  GLWidget::mouseReleaseEvent(event);
+QString GLMdiChild::strippedName(const QString &fullFileName) {
+   return QFileInfo(fullFileName).fileName();
 }

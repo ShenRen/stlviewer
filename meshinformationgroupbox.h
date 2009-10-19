@@ -23,7 +23,7 @@
 
 #include <QtGui/QGroupBox>
 
-#include "entity.h"
+#include "stlfile.h"
 
 class QLabel;
 
@@ -35,10 +35,10 @@ class MeshInformationGroupBox : public QGroupBox {
   MeshInformationGroupBox(QWidget *parent = 0);
   ~MeshInformationGroupBox();
   void reset();
-  void setValues(const Entity::Stats stats);
+  void setValues(const StlFile::Stats stats);
 
  private:
-  QLabel *num_facets, *num_points;
+  QLabel *numFacets, *numPoints;
 };
 
 #endif  // MESHINFORMATIONGROUPBOX_H

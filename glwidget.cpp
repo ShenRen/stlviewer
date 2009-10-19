@@ -22,7 +22,7 @@
 #include <QtOpenGL/QtOpenGL>
 
 #include "glwidget.h"
-#include "entity.h"
+#include "stlfile.h"
 
 GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent) {
   object = 0;
@@ -31,7 +31,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent) {
   xTrans= yTrans= zTrans= 0;
   defaultZoomFactor = zoomFactor = 1.0;
   zoomInc = 0;
-  leftMouseButtonMode_ = INACTIVE;
+  leftMouseButtonMode = INACTIVE;
   left = -1;
   right = 1;
   bottom = -1;
@@ -56,21 +56,61 @@ QSize GLWidget::sizeHint() const {
   return QSize(400, 400);
 }
 
+void GLWidget::makeObjectFromStlFile(StlFile *stlfile) {
+  makeCurrent();
+  object = glGenLists(1);
+  glNewList(object, GL_COMPILE);
+  glBegin(GL_TRIANGLES);
+  for (int i = 0; i < stlfile->getStats().numFacets; ++i) {
+    glNormal3d(stlfile->getFacets()[i].normal.x, stlfile->getFacets()[i].normal.y,
+               stlfile->getFacets()[i].normal.z);
+    triangle(stlfile->getFacets()[i].vector[0].x, stlfile->getFacets()[i].vector[0].y,
+             stlfile->getFacets()[i].vector[0].z,
+             stlfile->getFacets()[i].vector[1].x, stlfile->getFacets()[i].vector[1].y,
+             stlfile->getFacets()[i].vector[1].z,
+             stlfile->getFacets()[i].vector[2].x, stlfile->getFacets()[i].vector[2].y,
+             stlfile->getFacets()[i].vector[2].z);
+  }
+  glEnd();
+  glEndList();
+  xPos = (stlfile->getStats().max.x+stlfile->getStats().min.x)/2;
+  yPos = (stlfile->getStats().max.y+stlfile->getStats().min.y)/2;
+  zPos = (stlfile->getStats().max.z+stlfile->getStats().min.z)/2;
+  defaultZoomFactor = qMax(qMax(
+      qAbs(stlfile->getStats().max.x-stlfile->getStats().min.x),
+      qAbs(stlfile->getStats().max.y-stlfile->getStats().min.y)),
+      qAbs(stlfile->getStats().max.z-stlfile->getStats().min.z));
+  zoomInc = defaultZoomFactor/1000;
+  setDefaultCoordinates();
+}
+
+void GLWidget::deleteObject() {
+  glDeleteLists(object, 1);
+  updateGL();
+}
+
 void GLWidget::updateCursor() {
   QCursor cursor = this->cursor();
   cursor.setShape(Qt::ArrowCursor);
-  if (leftMouseButtonMode_ == ROTATE)
+  if (leftMouseButtonMode == ROTATE)
     cursor.setShape(Qt::SizeAllCursor);
-  else if (leftMouseButtonMode_ == TRANSLATE)
+  else if (leftMouseButtonMode == PANNING)
     cursor.setShape(Qt::SizeAllCursor);
   QWidget::setCursor(cursor);
 }
 
-void GLWidget::setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode mode) {
-  leftMouseButtonMode_ = mode;
-  updateCursor();
+void GLWidget::setDefaultCoordinates() {
+  makeCurrent();
+  xRot = yRot = zRot = 0;
+  xTrans = yTrans = zTrans = 0;
+  zoomFactor = defaultZoomFactor;
+  //glMatrixMode(GL_MODELVIEW);
+  //glPushMatrix();
+  //glLoadIdentity();
+  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
+  //glPopMatrix();
+  updateGL();
 }
-
 
 void GLWidget::setXRotation(int angle) {
   normalizeAngle(&angle);
@@ -126,17 +166,9 @@ void GLWidget::setZoom(float zoom) {
   }
 }
 
-void GLWidget::setDefaultCoordinates() {
-  makeCurrent();
-  xRot = yRot = zRot = 0;
-  xTrans = yTrans = zTrans = 0;
-  zoomFactor = defaultZoomFactor;
-  //glMatrixMode(GL_MODELVIEW);
-  //glPushMatrix();
-  //glLoadIdentity();
-  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
-  //glPopMatrix();
-  updateGL();
+void GLWidget::setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode mode) {
+  leftMouseButtonMode = mode;
+  updateCursor();
 }
 
 void GLWidget::initializeGL() {
@@ -153,7 +185,8 @@ void GLWidget::initializeGL() {
 void GLWidget::paintGL() {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(left*zoomFactor, right*zoomFactor, bottom*zoomFactor, top*zoomFactor, zNear, zFar);
+  glOrtho(left*zoomFactor, right*zoomFactor, bottom*zoomFactor, top*zoomFactor,
+          zNear, zFar);
   glMatrixMode(GL_MODELVIEW);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
@@ -194,8 +227,87 @@ void GLWidget::resizeGL(int width, int height) {
   glViewport((width - side) / 2, (height - side) / 2, side, side);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(left*zoomFactor, right*zoomFactor, bottom*zoomFactor, top*zoomFactor, zNear, zFar);
+  glOrtho(left*zoomFactor, right*zoomFactor, bottom*zoomFactor, top*zoomFactor,
+          zNear, zFar);
   glMatrixMode(GL_MODELVIEW);
+}
+
+void GLWidget::mousePressEvent(QMouseEvent *event) {
+  lastPos = event->pos();
+  QCursor cursor = this->cursor();
+  if (leftMouseButtonMode == ROTATE)
+    cursor.setShape(Qt::SizeAllCursor);
+  if (leftMouseButtonMode == PANNING)
+    cursor.setShape(Qt::SizeAllCursor);
+  if (event->buttons() & Qt::RightButton) {
+    cursor.setShape(Qt::SizeAllCursor);
+  } else if (event->buttons() & Qt::MidButton) {
+    cursor.setShape(Qt::SizeAllCursor);
+  }
+  QWidget::setCursor(cursor);
+}
+
+void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
+  updateCursor();
+  //if (event->button() & Qt::MidButton || (event->button() & Qt::MidButton &&
+  //    translationMode)) {
+
+  //  //glMatrixMode(GL_MODELVIEW);
+  //  //glPushMatrix();
+  //  //glLoadIdentity();
+  //  //glTranslated(-xTrans, -yTrans, -zTrans);
+  //  //glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
+  //  //glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
+  //  //glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
+  //  //glMultMatrixf(panMatrix);
+  //  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
+  //  //glPopMatrix();
+
+  //  /*xRot = yRot = zRot = 0;
+  //  xTrans = yTrans = zTrans = 0;*/
+  //  updateGL();
+  //}
+}
+
+void GLWidget::mouseMoveEvent(QMouseEvent *event) {
+  int dx = event->x() - lastPos.x();
+  int dy = event->y() - lastPos.y();
+  if (event->buttons() & Qt::LeftButton) {
+    if (leftMouseButtonMode == PANNING) {
+      setXTranslation(xTrans - dx*zoomFactor/100);
+      setYTranslation(yTrans + dy*zoomFactor/100);
+    } else if (leftMouseButtonMode == ROTATE) {
+      setXRotation(xRot + 8 * dy);
+      setZRotation(zRot - 8 * dx);
+    }
+  } else if (event->buttons() & Qt::RightButton) {
+    setXRotation(xRot + 8 * dy);
+    setZRotation(zRot - 8 * dx);
+  } else if (event->buttons() & Qt::MidButton) {
+    setXTranslation(xTrans - dx*zoomFactor/100);
+    setYTranslation(yTrans + dy*zoomFactor/100);
+  }
+  lastPos = event->pos();
+}
+
+void GLWidget::wheelEvent(QWheelEvent *event) {
+  int delta = event->delta();
+  setZoom(zoomFactor - delta*zoomInc);
+}
+
+void GLWidget::triangle(GLdouble x1, GLdouble y1, GLdouble z1,
+                        GLdouble x2, GLdouble y2, GLdouble z2,
+                        GLdouble x3, GLdouble y3, GLdouble z3) {
+  glVertex3d(x1, y1, z1);
+  glVertex3d(x2, y2, z2);
+  glVertex3d(x3, y3, z3);
+}
+
+void GLWidget::normalizeAngle(int *angle) {
+  while (*angle < 0)
+    *angle += 360 * 16;
+  while (*angle > 360 * 16)
+    *angle -= 360 * 16;
 }
 
 void GLWidget::drawAxes() {
@@ -225,114 +337,4 @@ void GLWidget::drawAxes() {
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_LIGHTING);
   glPopMatrix();
-}
-
-void GLWidget::mousePressEvent(QMouseEvent *event) {
-  lastPos = event->pos();
-  QCursor cursor = this->cursor();
-  if (leftMouseButtonMode_ == ROTATE)
-    cursor.setShape(Qt::SizeAllCursor);
-  if (leftMouseButtonMode_ == TRANSLATE)
-    cursor.setShape(Qt::SizeAllCursor);
-  if (event->buttons() & Qt::RightButton) {
-    cursor.setShape(Qt::SizeAllCursor);
-  } else if (event->buttons() & Qt::MidButton) {
-    cursor.setShape(Qt::SizeAllCursor);
-  }
-  QWidget::setCursor(cursor);
-}
-
-void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
-  updateCursor();
-  //if (event->button() & Qt::MidButton || (event->button() & Qt::MidButton && translationMode)) {
-
-  //  //glMatrixMode(GL_MODELVIEW);
-  //  //glPushMatrix();
-  //  //glLoadIdentity();
-  //  //glTranslated(-xTrans, -yTrans, -zTrans);
-  //  //glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
-  //  //glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
-  //  //glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-  //  //glMultMatrixf(panMatrix);
-  //  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
-  //  //glPopMatrix();
-
-  //  /*xRot = yRot = zRot = 0;
-  //  xTrans = yTrans = zTrans = 0;*/
-  //  updateGL();
-  //}
-}
-
-void GLWidget::mouseMoveEvent(QMouseEvent *event) {
-  int dx = event->x() - lastPos.x();
-  int dy = event->y() - lastPos.y();
-  if (event->buttons() & Qt::LeftButton) {
-    if (leftMouseButtonMode_ == TRANSLATE) {
-      setXTranslation(xTrans - dx*zoomFactor/100);
-      setYTranslation(yTrans + dy*zoomFactor/100);
-    } else if (leftMouseButtonMode_ == ROTATE) {
-      setXRotation(xRot + 8 * dy);
-      setZRotation(zRot - 8 * dx);
-    }
-  } else if (event->buttons() & Qt::RightButton) {
-    setXRotation(xRot + 8 * dy);
-    setZRotation(zRot - 8 * dx);
-  } else if (event->buttons() & Qt::MidButton) {
-    setXTranslation(xTrans - dx*zoomFactor/100);
-    setYTranslation(yTrans + dy*zoomFactor/100);
-  }
-  lastPos = event->pos();
-}
-
-void GLWidget::wheelEvent(QWheelEvent *event) {
-  int delta = event->delta();
-  setZoom(zoomFactor - delta*zoomInc);
-}
-
-void GLWidget::makeObjectFromEntity(Entity *entity) {
-  makeCurrent();
-  object = glGenLists(1);
-  glNewList(object, GL_COMPILE);
-
-  glBegin(GL_TRIANGLES);
-
-  for (int i = 0; i < entity->stats().num_facets; ++i) {
-    glNormal3d(entity->facets()[i].normal.x, entity->facets()[i].normal.y, entity->facets()[i].normal.z);
-    triangle(entity->facets()[i].vector[0].x, entity->facets()[i].vector[0].y, entity->facets()[i].vector[0].z,
-        entity->facets()[i].vector[1].x, entity->facets()[i].vector[1].y, entity->facets()[i].vector[1].z,
-        entity->facets()[i].vector[2].x, entity->facets()[i].vector[2].y, entity->facets()[i].vector[2].z);
-  }
-
-  glEnd();
-
-  glEndList();
-
-  xPos = (entity->stats().max.x+entity->stats().min.x)/2;
-  yPos = (entity->stats().max.y+entity->stats().min.y)/2;
-  zPos = (entity->stats().max.z+entity->stats().min.z)/2;
-  defaultZoomFactor = qMax(qMax(qAbs(entity->stats().max.x-entity->stats().min.x),
-               qAbs(entity->stats().max.y-entity->stats().min.y)),
-               qAbs(entity->stats().max.z-entity->stats().min.z));
-  zoomInc = defaultZoomFactor/1000;
-
-  setDefaultCoordinates();
-}
-
-void GLWidget::deleteObject() {
-  glDeleteLists(object, 1);
-  updateGL();
-}
-
-void GLWidget::triangle(GLdouble x1, GLdouble y1, GLdouble z1, GLdouble x2,
-                    GLdouble y2, GLdouble z2, GLdouble x3, GLdouble y3, GLdouble z3) {
-  glVertex3d(x1, y1, z1);
-  glVertex3d(x2, y2, z2);
-  glVertex3d(x3, y3, z3);
-}
-
-void GLWidget::normalizeAngle(int *angle) {
-  while (*angle < 0)
-    *angle += 360 * 16;
-  while (*angle > 360 * 16)
-    *angle -= 360 * 16;
 }

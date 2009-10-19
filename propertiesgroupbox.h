@@ -23,7 +23,7 @@
 
 #include <QtGui/QGroupBox>
 
-#include "entity.h"
+#include "stlfile.h"
 
 class QLabel;
 
@@ -35,7 +35,7 @@ class PropertiesGroupBox : public QGroupBox {
   PropertiesGroupBox(QWidget *parent = 0);
   ~PropertiesGroupBox();
   void reset();
-  void setValues(const Entity::Stats stats);
+  void setValues(const StlFile::Stats stats);
 
  private:
   QLabel *volume, *surface;

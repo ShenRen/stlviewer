@@ -22,7 +22,7 @@
 #define GLMDICHILD_H
 
 #include "glwidget.h"
-#include "entity.h"
+#include "stlfile.h"
 
 class GLMdiChild : public GLWidget {
 
@@ -31,18 +31,15 @@ class GLMdiChild : public GLWidget {
  public:
   GLMdiChild(QWidget *parent = 0);
   ~GLMdiChild();
-
   void newFile();
   bool loadFile(const QString &fileName);
   bool save();
   bool saveAs();
-  bool saveImage();
   bool saveFile(const QString &fileName);
-
+  bool saveImage();
   QString userFriendlyCurrentFile();
   QString currentFile() { return curFile; };
-
-  Entity::Stats getStats() const { return entity_->stats(); };
+  StlFile::Stats getStats() const { return stlFile->getStats(); };
 
  signals:
   void mouseButtonPressed(Qt::MouseButtons button);
@@ -57,8 +54,7 @@ class GLMdiChild : public GLWidget {
   bool maybeSave();
   void setCurrentFile(const QString &fileName);
   QString strippedName(const QString &fullFileName);
-
-  Entity *entity_;
+  StlFile *stlFile;
   QString curFile;
   bool isUntitled;
 };
