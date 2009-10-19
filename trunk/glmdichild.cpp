@@ -90,6 +90,26 @@ bool GLMdiChild::saveFile(const QString &fileName) {
   return true;
 }
 
+bool GLMdiChild::saveImage() {
+  QFileInfo fi(curFile);
+  QString imFile = fi.path() + "/" + fi.completeBaseName() + ".png";
+  QString filterPng = tr("PNG Files (*.png)");
+  QString filterBmp = tr("BMP Files (*.bmp)");
+  QString filterAll = tr("All files (*.*)");
+  QString filterSel = filterPng;
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save Image"), imFile, filterPng + ";;" + filterBmp + ";;" + filterAll, &filterSel);
+  if (fileName.isEmpty())
+    return false;
+  QString format = "png";
+  if (filterSel == filterBmp || QFileInfo(fileName).suffix() == ".bmp")
+    format = "bmp";  
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QPixmap originalPixmap = QPixmap::grabWindow(this->winId());
+  originalPixmap.save(fileName, format.toAscii());
+  QApplication::restoreOverrideCursor();
+  return true;
+}
+
 QString GLMdiChild::userFriendlyCurrentFile() {
   return strippedName(curFile);
 }

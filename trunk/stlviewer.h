@@ -55,6 +55,7 @@ class STLViewer : public QMainWindow {
   void open();
   void save();
   void saveAs();
+  void saveImage();
   void rotate();
   void translate();
   void zoom();
@@ -93,6 +94,7 @@ class STLViewer : public QMainWindow {
   QAction *openAct;
   QAction *saveAct;
   QAction *saveAsAct;
+  QAction *saveImageAct;
   QAction *closeAct;
   QAction *closeAllAct;
   QAction *tileAct;

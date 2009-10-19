@@ -36,6 +36,7 @@ class GLMdiChild : public GLWidget {
   bool loadFile(const QString &fileName);
   bool save();
   bool saveAs();
+  bool saveImage();
   bool saveFile(const QString &fileName);
 
   QString userFriendlyCurrentFile();
