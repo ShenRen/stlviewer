@@ -313,11 +313,12 @@ void STLViewer::createActions() {
   connect(saveAsAct, SIGNAL(triggered()), this, SLOT(saveAs()));
 
   saveImageAct = new QAction(tr("Save Image..."), this);
+  saveImageAct->setShortcut(tr("Ctrl+I"));
   saveImageAct->setStatusTip(tr("Save the current view to disk"));
   connect(saveImageAct, SIGNAL(triggered()), this, SLOT(saveImage()));
 
   closeAct = new QAction(tr("Cl&ose"), this);
-  closeAct->setShortcut(tr("Ctrl+F4"));
+  closeAct->setShortcut(tr("Ctrl+W"));
   closeAct->setStatusTip(tr("Close the active window"));
   connect(closeAct, SIGNAL(triggered()),
     mdiArea, SLOT(closeActiveSubWindow()));
@@ -353,6 +354,7 @@ void STLViewer::createActions() {
 
   rotateAct = new QAction(QIcon(":STLViewer/Images/arrow_rotate_clockwise.png"),
     tr("&Rotate"), this);
+  rotateAct->setShortcut(tr("R"));
   rotateAct->setStatusTip(tr("Rotate the object"));
   rotateAct->setCheckable(true);
   connect(rotateAct, SIGNAL(triggered()), this, SLOT(rotate()));
@@ -360,6 +362,7 @@ void STLViewer::createActions() {
     
   panningAct = new QAction(QIcon(":STLViewer/Images/arrow_out.png"), tr("&Pan"),
     this);
+  panningAct->setShortcut(tr("P"));
   panningAct->setStatusTip(tr("Drag the object around"));
   panningAct->setCheckable(true);
   connect(panningAct, SIGNAL(triggered()), this, SLOT(panning()));
@@ -367,12 +370,14 @@ void STLViewer::createActions() {
 
   zoomAct = new QAction(QIcon(":STLViewer/Images/magnifier_zoom_in.png"),
     tr("&Zoom In"), this);
+  zoomAct->setShortcut(tr("Z"));
   zoomAct->setStatusTip(tr("Zoom in"));
   connect(zoomAct, SIGNAL(triggered()), this, SLOT(zoom()));
 
   defaultViewAct =
     new QAction(QIcon(":STLViewer/Images/page_white_magnify.png"),
       tr("&Default Zoom"), this);
+  defaultViewAct->setShortcut(tr("U"));
   defaultViewAct->setStatusTip(tr("Zoom by default"));
   connect(defaultViewAct, SIGNAL(triggered()), this, SLOT(defaultView()));
 
