@@ -112,6 +112,13 @@ void GLWidget::setDefaultCoordinates() {
   updateGL();
 }
 
+void GLWidget::unzoom() {
+  makeCurrent();
+  xTrans = yTrans = zTrans = 0;
+  zoomFactor = defaultZoomFactor;
+  updateGL();
+}
+
 void GLWidget::setBackView() {
   makeCurrent();
   setXRotation(270*16);

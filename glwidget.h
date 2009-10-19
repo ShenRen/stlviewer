@@ -43,6 +43,7 @@ class GLWidget : public QGLWidget {
   void makeObjectFromStlFile(StlFile*);
   void deleteObject();
   void setDefaultCoordinates();
+  void unzoom();
   void setBackView();
   void setFrontView();
   void setLeftView();
