@@ -5,7 +5,6 @@
         <file>Images/page_white.png</file>
         <file>Images/arrow_out.png</file>
         <file>Images/arrow_rotate_clockwise.png</file>
-        <file>Images/page_white_magnify.png</file>
         <file>Images/magnifier_zoom_in.png</file>
         <file>Images/back_view.png</file>
         <file>Images/bottom_view.png</file>
@@ -14,5 +13,7 @@
         <file>Images/right_view.png</file>
         <file>Images/top_view.png</file>
         <file>Images/top_front_left_view.png</file>
+        <file>Images/wireframe.png</file>
+        <file>Images/magnifier_zoom_out.png</file>
     </qresource>
 </RCC>

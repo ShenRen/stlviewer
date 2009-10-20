@@ -111,31 +111,28 @@ void STLViewer::saveImage() {
 }
 
 void STLViewer::rotate() {
-  QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-  separatorAct->setVisible(!windows.isEmpty());
   if (rotateAct->isChecked()) {
-    rotateAct->setChecked(true);
     panningAct->setChecked(false);
     leftMouseButtonMode = GLWidget::ROTATE;
   } else {
-    rotateAct->setChecked(false);
     leftMouseButtonMode = GLWidget::INACTIVE;
   }
   emit leftMouseButtonModeChanged(leftMouseButtonMode);
 }
 
 void STLViewer::panning() {
-  QList<QMdiSubWindow *> windows = mdiArea->subWindowList();
-  separatorAct->setVisible(!windows.isEmpty());
   if (panningAct->isChecked()) {
-    panningAct->setChecked(true);
     rotateAct->setChecked(false);
     leftMouseButtonMode = GLWidget::PANNING;
   } else {
-    panningAct->setChecked(false);
     leftMouseButtonMode = GLWidget::INACTIVE;
   }
   emit leftMouseButtonModeChanged(leftMouseButtonMode);
+}
+
+void STLViewer::wireframe() {
+  activeGLMdiChild()->setWireframeMode(wireframeAct->isChecked());
+  //emit wireframeStatusChanged(wireframeAct->isChecked());
 }
 
 void STLViewer::zoom() {}
@@ -188,6 +185,11 @@ void STLViewer::updateMenus() {
   rotateAct->setEnabled(hasGLMdiChild);
   panningAct->setEnabled(hasGLMdiChild);
   unzoomAct->setEnabled(hasGLMdiChild);
+  wireframeAct->setEnabled(hasGLMdiChild);
+  if (hasGLMdiChild)
+    wireframeAct->setChecked(activeGLMdiChild()->isWireframeModeActivated());
+  else
+    wireframeAct->setChecked(false);
   backViewAct->setEnabled(hasGLMdiChild);
   frontViewAct->setEnabled(hasGLMdiChild);
   leftViewAct->setEnabled(hasGLMdiChild);
@@ -270,6 +272,8 @@ GLMdiChild *STLViewer::createGLMdiChild() {
     SIGNAL(leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode)), child,
     SLOT(setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode)));
   connect(child, SIGNAL(destroyed()), this, SLOT(destroyGLMdiChild()));
+  /*connect(this, SIGNAL(wireframeStatusChanged(bool)),
+          child, SLOT(setWireframeMode(bool)));*/
   return child;
 }
 
@@ -375,7 +379,7 @@ void STLViewer::createActions() {
   connect(zoomAct, SIGNAL(triggered()), this, SLOT(zoom()));
 
   unzoomAct =
-    new QAction(QIcon(":STLViewer/Images/page_white_magnify.png"),
+    new QAction(QIcon(":STLViewer/Images/magnifier_zoom_out.png"),
       tr("&Unzoom"), this);
   unzoomAct->setShortcut(tr("U"));
   unzoomAct->setStatusTip(tr("Unzoom"));
@@ -421,7 +425,16 @@ void STLViewer::createActions() {
     new QAction(QIcon(":STLViewer/Images/top_front_left_view.png"),
       tr("&Top Front Left View"), this);
   topFrontLeftViewAct->setStatusTip(tr("Top Front Left view"));
-  connect(topFrontLeftViewAct, SIGNAL(triggered()), this, SLOT(topFrontLeftView()));
+  connect(topFrontLeftViewAct, SIGNAL(triggered()), this,
+          SLOT(topFrontLeftView()));
+
+  wireframeAct = new QAction(QIcon(":STLViewer/Images/wireframe.png"),
+                             tr("&Wireframe"), this);
+  wireframeAct->setShortcut(tr("W"));
+  wireframeAct->setStatusTip(tr("Wireframe view"));
+  wireframeAct->setCheckable(true);
+  connect(wireframeAct, SIGNAL(triggered()), this, SLOT(wireframe()));
+  wireframeAct->setChecked(false);
 
   exitAct = new QAction(tr("E&xit"), this);
   exitAct->setShortcut(tr("Ctrl+Q"));
@@ -448,6 +461,7 @@ void STLViewer::createMenus() {
   viewMenu->addAction(panningAct);
   viewMenu->addAction(zoomAct);
   viewMenu->addAction(unzoomAct);
+  viewMenu->addAction(wireframeAct);
 
   defaultViewsMenu = viewMenu->addMenu(tr("&Default Views"));
   defaultViewsMenu->addAction(backViewAct);
@@ -481,6 +495,7 @@ void STLViewer::createToolBars() {
   viewToolBar->addAction(panningAct);
   viewToolBar->addAction(zoomAct);
   viewToolBar->addAction(unzoomAct);
+  viewToolBar->addAction(wireframeAct);
   viewToolBar->addAction(backViewAct);
   viewToolBar->addAction(frontViewAct);
   viewToolBar->addAction(leftViewAct);

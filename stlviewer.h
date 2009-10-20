@@ -46,6 +46,7 @@ class STLViewer : public QMainWindow {
 
  signals:
   void leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode mode);
+  //void wireframeStatusChanged(bool wireframe);
 
  protected:
   void closeEvent(QCloseEvent *event);
@@ -67,6 +68,7 @@ class STLViewer : public QMainWindow {
   void topView();
   void bottomView();
   void topFrontLeftView();
+  void wireframe();
   void about();
   void updateMenus();
   void updateWindowMenu();
@@ -120,6 +122,7 @@ class STLViewer : public QMainWindow {
   QAction *topViewAct;
   QAction *bottomViewAct;
   QAction *topFrontLeftViewAct;
+  QAction *wireframeAct;
   QAction *exitAct;
   QAction *aboutAct;
   QString curDir;

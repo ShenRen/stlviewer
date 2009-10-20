@@ -51,6 +51,7 @@ class GLWidget : public QGLWidget {
   void setTopView();
   void setBottomView();
   void setTopFrontLeftView();
+  bool isWireframeModeActivated() const { return wireframeMode; };
 
  public slots:
   void setXRotation(int angle);
@@ -60,6 +61,7 @@ class GLWidget : public QGLWidget {
   void setYTranslation(float distance);
   void setZoom(float zoom);
   void setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode);
+  void setWireframeMode(bool state);
 
  signals:
   void xRotationChanged(int angle);
@@ -86,6 +88,7 @@ class GLWidget : public QGLWidget {
   void updateCursor();
   //GLfloat panMatrix[16];
   GLuint object;
+  bool wireframeMode;
   LeftMouseButtonMode leftMouseButtonMode;
   int xRot, yRot, zRot;
   int xPos, yPos, zPos;

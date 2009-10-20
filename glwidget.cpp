@@ -38,6 +38,7 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent) {
   top = 1;
   zNear = -1500000;
   zFar = 1500000;
+  wireframeMode = false;
   grey = QColor::fromRgbF(0.6, 0.6, 0.6);
   black = QColor::fromRgbF(0.0, 0.0, 0.0);
   purple = QColor::fromCmykF(0.39, 0.39, 0.0, 0.0);
@@ -62,13 +63,17 @@ void GLWidget::makeObjectFromStlFile(StlFile *stlfile) {
   glNewList(object, GL_COMPILE);
   glBegin(GL_TRIANGLES);
   for (int i = 0; i < stlfile->getStats().numFacets; ++i) {
-    glNormal3d(stlfile->getFacets()[i].normal.x, stlfile->getFacets()[i].normal.y,
+    glNormal3d(stlfile->getFacets()[i].normal.x,
+               stlfile->getFacets()[i].normal.y,
                stlfile->getFacets()[i].normal.z);
-    triangle(stlfile->getFacets()[i].vector[0].x, stlfile->getFacets()[i].vector[0].y,
+    triangle(stlfile->getFacets()[i].vector[0].x,
+             stlfile->getFacets()[i].vector[0].y,
              stlfile->getFacets()[i].vector[0].z,
-             stlfile->getFacets()[i].vector[1].x, stlfile->getFacets()[i].vector[1].y,
+             stlfile->getFacets()[i].vector[1].x,
+             stlfile->getFacets()[i].vector[1].y,
              stlfile->getFacets()[i].vector[1].z,
-             stlfile->getFacets()[i].vector[2].x, stlfile->getFacets()[i].vector[2].y,
+             stlfile->getFacets()[i].vector[2].x,
+             stlfile->getFacets()[i].vector[2].y,
              stlfile->getFacets()[i].vector[2].z);
   }
   glEnd();
@@ -227,6 +232,12 @@ void GLWidget::setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode mode) {
   updateCursor();
 }
 
+void GLWidget::setWireframeMode(bool state) {
+  makeCurrent();
+  wireframeMode = state;
+  updateGL();
+}
+
 void GLWidget::initializeGL() {
   qglClearColor(purple.dark());
   glEnable(GL_DEPTH_TEST);
@@ -263,17 +274,23 @@ void GLWidget::paintGL() {
   //glTranslated(-xPos-xTrans, -yPos-yTrans, -zPos-zTrans);
   glTranslated(-xPos, -yPos, -zPos);
 
-  glPolygonMode(GL_BACK, GL_FILL);
-	glCullFace(GL_BACK);
+  if (!wireframeMode)
+    //glPolygonMode(GL_BACK, GL_FILL);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  else
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glCullFace(GL_BACK);
   qglColor(grey);
   glCallList(object);
 
-  glCullFace(GL_FRONT);
-  qglColor(black);
-	glPolygonMode(GL_BACK, GL_LINE);
-  glCallList(object);
-	glPolygonMode(GL_BACK, GL_FILL);
-	glCullFace(GL_BACK);
+  if (!wireframeMode) {
+    glCullFace(GL_FRONT);
+    qglColor(black);
+	  glPolygonMode(GL_BACK, GL_LINE);
+    glCallList(object);
+	  glPolygonMode(GL_BACK, GL_FILL);
+	  glCullFace(GL_BACK);
+  }
 
   drawAxes();
 }
