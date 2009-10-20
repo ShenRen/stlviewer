@@ -88,14 +88,13 @@ class GLWidget : public QGLWidget {
   void drawAxes();
   void updateCursor();
   //GLfloat panMatrix[16];
+  int width, height;
   GLuint object;
   bool wireframeMode;
   LeftMouseButtonMode leftMouseButtonMode;
   int xRot, yRot, zRot;
   int xPos, yPos, zPos;
   float xTrans, yTrans, zTrans;
-  float zNear, zFar;
-  float left, right, top, bottom;
   float zoomFactor;
   float zoomInc;
   float defaultZoomFactor;

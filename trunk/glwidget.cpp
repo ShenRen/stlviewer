@@ -32,12 +32,6 @@ GLWidget::GLWidget(QWidget *parent) : QGLWidget(parent) {
   defaultZoomFactor = zoomFactor = 1.0;
   zoomInc = 0;
   leftMouseButtonMode = INACTIVE;
-  left = -1;
-  right = 1;
-  bottom = -1;
-  top = 1;
-  zNear = -1500000;
-  zFar = 1500000;
   wireframeMode = false;
   grey = QColor::fromRgbF(0.6, 0.6, 0.6);
   black = QColor::fromRgbF(0.0, 0.0, 0.0);
@@ -174,9 +168,11 @@ void GLWidget::setBottomView() {
 
 void GLWidget::setTopFrontLeftView() {
   makeCurrent();
-  setXRotation(315*16);
+  //setXRotation(315*16);
+  setXRotation(290*16);
   setYRotation(0);
-  setZRotation(45*16);
+  //setZRotation(45*16);
+  setZRotation(30*16);
 }
 
 void GLWidget::setXRotation(int angle) {
@@ -258,19 +254,17 @@ void GLWidget::initializeGL() {
 void GLWidget::paintGL() {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(left*zoomFactor, right*zoomFactor, bottom*zoomFactor, top*zoomFactor,
-          zNear, zFar);
+  // Adjust clipping box
+  if (width <= height)
+    glOrtho(-zoomFactor, zoomFactor, -zoomFactor*height/width,
+            zoomFactor*height/width, -zoomFactor*5000.0f, zoomFactor*5000.0f);
+  else
+    glOrtho(-zoomFactor*width/height, zoomFactor*width/height,
+            -zoomFactor, zoomFactor, -zoomFactor*5000.0f, zoomFactor*5000.0f);
   glMatrixMode(GL_MODELVIEW);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glLoadIdentity();
-  //gluLookAt(zoomFactor, zoomFactor, zoomFactor, xPos, yPos, zPos, 0, 1, 0);
-  glPushMatrix();
-  glTranslated(zoomFactor-zoomFactor/4, -zoomFactor+zoomFactor/5, 0.0f);
-  glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
-  glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
-  glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-  drawAxes();
-  glPopMatrix();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
   glTranslated(-xTrans, -yTrans, -zTrans);
   glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
   glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
@@ -299,15 +293,34 @@ void GLWidget::paintGL() {
   }
 
   drawAxes();
+
+  //gluLookAt(zoomFactor, zoomFactor, zoomFactor, xPos, yPos, zPos, 0, 1, 0);
+  glPushMatrix();
+  glLoadIdentity();
+  if (width <= height)
+    glTranslated(zoomFactor - zoomFactor/4, -zoomFactor*height/width + (zoomFactor*height/width)/5, 0.0f);
+  else
+    glTranslated(zoomFactor*width/height - (zoomFactor*width/height)/4, -zoomFactor + zoomFactor/5, 0.0f);
+  glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
+  glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
+  glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
+  drawAxes();
+  glPopMatrix();
 }
 
 void GLWidget::resizeGL(int width, int height) {
-  int side = qMax(width, height);
-  glViewport((width - side) / 2, (height - side) / 2, side, side);
+  this->width = width;
+  this->height = height;
+  glViewport(0, 0, width, height);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(left*zoomFactor, right*zoomFactor, bottom*zoomFactor, top*zoomFactor,
-          zNear, zFar);
+  // Adjust clipping box
+  if (width <= height)
+    glOrtho(-zoomFactor, zoomFactor, -zoomFactor*height/width,
+            zoomFactor*height/width, -zoomFactor*5000.0f, zoomFactor*5000.0f);
+  else
+    glOrtho(-zoomFactor*width/height, zoomFactor*width/height,
+            -zoomFactor, zoomFactor, -zoomFactor*5000.0f, zoomFactor*5000.0f);
   glMatrixMode(GL_MODELVIEW);
 }
 
