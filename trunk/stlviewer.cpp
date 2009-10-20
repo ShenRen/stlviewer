@@ -135,7 +135,9 @@ void STLViewer::wireframe() {
   //emit wireframeStatusChanged(wireframeAct->isChecked());
 }
 
-void STLViewer::zoom() {}
+void STLViewer::zoom() {
+  activeGLMdiChild()->zoom();
+}
 
 void STLViewer::unzoom() {
   activeGLMdiChild()->unzoom();

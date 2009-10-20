@@ -82,6 +82,7 @@ bool GLMdiChild::saveAs() {
     // Save the file
     return saveFile(fileName);
   }
+  return false;
 }
 
 bool GLMdiChild::saveFile(const QString &fileName) {
