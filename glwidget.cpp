@@ -119,6 +119,10 @@ void GLWidget::setDefaultView() {
   //updateGL();
 }
 
+void GLWidget::zoom() {
+  setZoom(zoomFactor - 50*zoomInc);
+}
+
 void GLWidget::unzoom() {
   makeCurrent();
   xTrans = yTrans = zTrans = 0;
