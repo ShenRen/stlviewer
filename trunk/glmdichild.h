@@ -40,6 +40,7 @@ class GLMdiChild : public GLWidget {
   QString userFriendlyCurrentFile();
   QString currentFile() { return curFile; };
   StlFile::Stats getStats() const { return stlFile->getStats(); };
+  bool isUntitled;
 
  signals:
   void mouseButtonPressed(Qt::MouseButtons button);
@@ -56,7 +57,6 @@ class GLMdiChild : public GLWidget {
   QString strippedName(const QString &fullFileName);
   StlFile *stlFile;
   QString curFile;
-  bool isUntitled;
 };
 
 #endif  // GLMDICHILD_H
