@@ -172,8 +172,15 @@ void STLViewer::topFrontLeftView() {
 }
 
 void STLViewer::about() {
-  QMessageBox::about(this, tr("About STLViewer"),
-    tr("<a href=\"http://www.cravesoft.com\">www.cravesoft.com</b>"));
+  QMessageBox::about(this, tr("About STLViewer"), tr(
+      "<p align=\"center\">STLViewer</p>"
+      "<p align=\"center\">v%1</p>"
+      "<p align=\"center\">Copyright (c) 2009 Olivier Crave</p>"
+      "<p align=\"center\">Web: <a href=\"http://www.cravesoft.com\">"
+      "www.cravesoft.com</a></p>"
+      "<p align=\"center\">Mail: <a href=\"mailto:cravesoft@gmail.com\">"
+      "cravesoft@gmail.com</a></p>"
+      ).arg(QCoreApplication::applicationVersion()));
 }
 
 void STLViewer::updateMenus() {

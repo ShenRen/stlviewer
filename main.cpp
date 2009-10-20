@@ -24,6 +24,7 @@
 int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(stlviewer);
   QApplication a(argc, argv);
+  a.setApplicationVersion("1.0");
   STLViewer w;
   w.show();
   return a.exec();
