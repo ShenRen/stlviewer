@@ -59,27 +59,29 @@ bool GLMdiChild::save() {
 }
 
 bool GLMdiChild::saveAs() {
-  QString filterBin = tr("STL Files, binary (*.stl)");
-  QString filterAscii = tr("STL Files, ASCII (*.stl)");
-  QString filterAll = tr("All files (*.*)");
-  QString filterSel;
-  // Set the current file type as default
-  if (stlFile->getStats().type == StlFile::ASCII)
-    filterSel = filterAscii;
-  else
-    filterSel = filterBin;
-  QString fileName = QFileDialog::getSaveFileName(
-      this, tr("Save As"), curFile,
-      filterBin + ";;" + filterAscii + ";;" + filterAll, &filterSel);
-  if (fileName.isEmpty())
-    return false;
-  // Change the current file type to the one chosen by the user
-  if (filterSel == filterBin)
-    stlFile->setFormat(StlFile::BINARY);
-  else if (filterSel == filterAscii)
-    stlFile->setFormat(StlFile::ASCII);
-  // Save the file
-  return saveFile(fileName);
+  if (!isUntitled) {
+    QString filterBin = tr("STL Files, binary (*.stl)");
+    QString filterAscii = tr("STL Files, ASCII (*.stl)");
+    QString filterAll = tr("All files (*.*)");
+    QString filterSel;
+    // Set the current file type as default
+    if (stlFile->getStats().type == StlFile::ASCII)
+      filterSel = filterAscii;
+    else
+      filterSel = filterBin;
+    QString fileName = QFileDialog::getSaveFileName(
+        this, tr("Save As"), curFile,
+        filterBin + ";;" + filterAscii + ";;" + filterAll, &filterSel);
+    if (fileName.isEmpty())
+      return false;
+    // Change the current file type to the one chosen by the user
+    if (filterSel == filterBin)
+      stlFile->setFormat(StlFile::BINARY);
+    else if (filterSel == filterAscii)
+      stlFile->setFormat(StlFile::ASCII);
+    // Save the file
+    return saveFile(fileName);
+  }
 }
 
 bool GLMdiChild::saveFile(const QString &fileName) {

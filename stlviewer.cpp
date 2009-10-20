@@ -202,7 +202,7 @@ void STLViewer::updateMenus() {
   nextAct->setEnabled(hasGLMdiChild);
   previousAct->setEnabled(hasGLMdiChild);
   separatorAct->setVisible(hasGLMdiChild);
-  if (hasGLMdiChild) {
+  if (hasGLMdiChild && !activeGLMdiChild()->isUntitled) {
     dimensionsGroupBox->setValues(activeGLMdiChild()->getStats());
     meshInformationGroupBox->setValues(activeGLMdiChild()->getStats());
     propertiesGroupBox->setValues(activeGLMdiChild()->getStats());
