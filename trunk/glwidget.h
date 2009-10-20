@@ -42,7 +42,7 @@ class GLWidget : public QGLWidget {
   QSize sizeHint() const;
   void makeObjectFromStlFile(StlFile*);
   void deleteObject();
-  void setDefaultCoordinates();
+  void setDefaultView();
   void unzoom();
   void setBackView();
   void setFrontView();

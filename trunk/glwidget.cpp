@@ -86,7 +86,7 @@ void GLWidget::makeObjectFromStlFile(StlFile *stlfile) {
       qAbs(stlfile->getStats().max.y-stlfile->getStats().min.y)),
       qAbs(stlfile->getStats().max.z-stlfile->getStats().min.z));
   zoomInc = defaultZoomFactor/1000;
-  setDefaultCoordinates();
+  setDefaultView();
 }
 
 void GLWidget::deleteObject() {
@@ -104,17 +104,19 @@ void GLWidget::updateCursor() {
   QWidget::setCursor(cursor);
 }
 
-void GLWidget::setDefaultCoordinates() {
-  makeCurrent();
+void GLWidget::setDefaultView() {
+  setTopFrontLeftView();
+  unzoom();
+  /*makeCurrent();
   xRot = yRot = zRot = 0;
   xTrans = yTrans = zTrans = 0;
-  zoomFactor = defaultZoomFactor;
+  zoomFactor = defaultZoomFactor;*/
   //glMatrixMode(GL_MODELVIEW);
   //glPushMatrix();
   //glLoadIdentity();
   //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
   //glPopMatrix();
-  updateGL();
+  //updateGL();
 }
 
 void GLWidget::unzoom() {
