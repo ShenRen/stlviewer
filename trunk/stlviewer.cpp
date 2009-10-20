@@ -178,8 +178,13 @@ void STLViewer::about() {
 
 void STLViewer::updateMenus() {
   bool hasGLMdiChild = (activeGLMdiChild() != 0);
-  saveAct->setEnabled(hasGLMdiChild);
-  saveAsAct->setEnabled(hasGLMdiChild);
+  if (hasGLMdiChild && !activeGLMdiChild()->isUntitled) {
+    saveAct->setEnabled(true);
+    saveAsAct->setEnabled(true);
+  } else {
+    saveAct->setEnabled(false);
+    saveAsAct->setEnabled(false);
+  }
   saveImageAct->setEnabled(hasGLMdiChild);
   closeAct->setEnabled(hasGLMdiChild);
   closeAllAct->setEnabled(hasGLMdiChild);
