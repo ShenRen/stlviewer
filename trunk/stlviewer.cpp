@@ -24,7 +24,6 @@
 #include <fstream>
 
 #include "stlviewer.h"
-//#include "axisglwidget.h"
 #include "axisgroupbox.h"
 #include "dimensionsgroupbox.h"
 #include "meshinformationgroupbox.h"
@@ -72,7 +71,6 @@ void STLViewer::newFile() {
   child->newFile();
   child->show();
   // Reset all informations
-  //axisGLWidget->hideAxis();
   axisGroupBox->reset();
   dimensionsGroupBox->reset();
   meshInformationGroupBox->reset();
@@ -221,15 +219,13 @@ void STLViewer::updateMenus() {
   previousAct->setEnabled(hasGLMdiChild);
   separatorAct->setVisible(hasGLMdiChild);
   if (hasGLMdiChild && !activeGLMdiChild()->isUntitled) {
-    //axisGLWidget->rotateAxis(activeGLMdiChild()->getRotationValues());
-    //dimensionsGroupBox->setValues(activeGLMdiChild()->getStats());
     axisGroupBox->setXRotation(activeGLMdiChild()->getXRot());
     axisGroupBox->setYRotation(activeGLMdiChild()->getYRot());
     axisGroupBox->setZRotation(activeGLMdiChild()->getZRot());
+    dimensionsGroupBox->setValues(activeGLMdiChild()->getStats());
     meshInformationGroupBox->setValues(activeGLMdiChild()->getStats());
     propertiesGroupBox->setValues(activeGLMdiChild()->getStats());
   } else {
-    //axisGLWidget->hideAxis();
     axisGroupBox->reset();
     dimensionsGroupBox->reset();
     meshInformationGroupBox->reset();
@@ -302,7 +298,6 @@ GLMdiChild *STLViewer::createGLMdiChild() {
           SLOT(setYRotation(const int)));
   connect(child, SIGNAL(zRotationChanged(const int)), axisGroupBox,
           SLOT(setZRotation(const int)));
-  //axisGroupBox->InitValues(child->xRot);
   return child;
 }
 
@@ -562,25 +557,19 @@ void STLViewer::createDockWindows() {
   // Add a button in the view menu to show/hide the DockWidget
   viewMenu->addAction(dock->toggleViewAction());
 
-  // Create a DockWidget named "World Coordinate System"
+  // Create a DockWidget named "View Informations"
   dock = new QDockWidget(tr("View Informations"), this);
   dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
-  // Create one GLWidget to display the axis
-  //axisGLWidget = new AxisGLWidget(this);
   // Create one GroupBox to display the axis
   axisGroupBox = new AxisGroupBox(this);
+  // Create a layout inside a widget to display all GroupBoxes in one layout
   wi = new QWidget;
   wi->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
                                 QSizePolicy::Fixed));
   layout = new QVBoxLayout;
   layout->addWidget(axisGroupBox);
   wi->setLayout(layout);
-  /*axisGroupBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
-                                          QSizePolicy::Fixed));*/
-  // Embed the GLWidget into the DockWidget
-  //dock->setWidget(axisGLWidget);
-  // Embed the GroupBox into the DockWidget
-  //dock->setWidget(axisGroupBox);
+  // Embed the widget that contains all GroupBoxes into the DockWidget
   dock->setWidget(wi);
   // Add the DockWidget at the right side of the main layout
   addDockWidget(Qt::RightDockWidgetArea, dock);

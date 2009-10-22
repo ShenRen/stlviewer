@@ -32,7 +32,8 @@ AxisGLWidget::~AxisGLWidget() {
   makeCurrent();
 }
 
-void AxisGLWidget::hideAxis() {
+void AxisGLWidget::reset() {
+  xRot = yRot = zRot = 0;
 }
 
 QSize AxisGLWidget::minimumSizeHint() const {
@@ -45,19 +46,19 @@ QSize AxisGLWidget::sizeHint() const {
 
 void AxisGLWidget::setXRotation(const int angle) {
   xRot = angle;
-  //emit xRotationChanged(angle);
+  emit xRotationChanged(angle);
   updateGL();
 }
 
 void AxisGLWidget::setYRotation(const int angle) {
   yRot = angle;
-  //emit yRotationChanged(angle);
+  emit yRotationChanged(angle);
   updateGL();
 }
 
 void AxisGLWidget::setZRotation(const int angle) {
   zRot = angle;
-  //emit zRotationChanged(angle);
+  emit zRotationChanged(angle);
   updateGL();
 }
 

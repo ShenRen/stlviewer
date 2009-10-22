@@ -26,7 +26,6 @@
 
 #include "glmdichild.h"
 
-//class AxisGLWidget;
 class AxisGroupBox;
 class DimensionsGroupBox;
 class MeshInformationGroupBox;
@@ -48,7 +47,6 @@ class STLViewer : public QMainWindow {
 
  signals:
   void leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode mode);
-  //void wireframeStatusChanged(bool wireframe);
 
  protected:
   void closeEvent(QCloseEvent *event);
@@ -129,7 +127,6 @@ class STLViewer : public QMainWindow {
   QAction *aboutAct;
   QString curDir;
   GLWidget::LeftMouseButtonMode leftMouseButtonMode;
-  //AxisGLWidget *axisGLWidget;
   AxisGroupBox *axisGroupBox;
   DimensionsGroupBox *dimensionsGroupBox;
   MeshInformationGroupBox *meshInformationGroupBox;

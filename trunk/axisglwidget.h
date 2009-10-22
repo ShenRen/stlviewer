@@ -35,7 +35,7 @@ class AxisGLWidget : public QGLWidget  {
  public:
   AxisGLWidget(QWidget *parent = 0);
   ~AxisGLWidget();
-  void hideAxis();
+  void reset();
   void rotateAxis();
   QSize minimumSizeHint() const;
   QSize sizeHint() const;
