@@ -24,6 +24,8 @@
 #include <fstream>
 
 #include "stlviewer.h"
+//#include "axisglwidget.h"
+#include "axisgroupbox.h"
 #include "dimensionsgroupbox.h"
 #include "meshinformationgroupbox.h"
 #include "propertiesgroupbox.h"
@@ -70,6 +72,8 @@ void STLViewer::newFile() {
   child->newFile();
   child->show();
   // Reset all informations
+  //axisGLWidget->hideAxis();
+  axisGroupBox->reset();
   dimensionsGroupBox->reset();
   meshInformationGroupBox->reset();
   propertiesGroupBox->reset();
@@ -217,10 +221,16 @@ void STLViewer::updateMenus() {
   previousAct->setEnabled(hasGLMdiChild);
   separatorAct->setVisible(hasGLMdiChild);
   if (hasGLMdiChild && !activeGLMdiChild()->isUntitled) {
-    dimensionsGroupBox->setValues(activeGLMdiChild()->getStats());
+    //axisGLWidget->rotateAxis(activeGLMdiChild()->getRotationValues());
+    //dimensionsGroupBox->setValues(activeGLMdiChild()->getStats());
+    axisGroupBox->setXRotation(activeGLMdiChild()->getXRot());
+    axisGroupBox->setYRotation(activeGLMdiChild()->getYRot());
+    axisGroupBox->setZRotation(activeGLMdiChild()->getZRot());
     meshInformationGroupBox->setValues(activeGLMdiChild()->getStats());
     propertiesGroupBox->setValues(activeGLMdiChild()->getStats());
   } else {
+    //axisGLWidget->hideAxis();
+    axisGroupBox->reset();
     dimensionsGroupBox->reset();
     meshInformationGroupBox->reset();
     propertiesGroupBox->reset();
@@ -286,8 +296,13 @@ GLMdiChild *STLViewer::createGLMdiChild() {
     SIGNAL(leftMouseButtonModeChanged(GLWidget::LeftMouseButtonMode)), child,
     SLOT(setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode)));
   connect(child, SIGNAL(destroyed()), this, SLOT(destroyGLMdiChild()));
-  /*connect(this, SIGNAL(wireframeStatusChanged(bool)),
-          child, SLOT(setWireframeMode(bool)));*/
+  connect(child, SIGNAL(xRotationChanged(const int)), axisGroupBox,
+          SLOT(setXRotation(const int)));
+  connect(child, SIGNAL(yRotationChanged(const int)), axisGroupBox,
+          SLOT(setYRotation(const int)));
+  connect(child, SIGNAL(zRotationChanged(const int)), axisGroupBox,
+          SLOT(setZRotation(const int)));
+  //axisGroupBox->InitValues(child->xRot);
   return child;
 }
 
@@ -525,7 +540,7 @@ void STLViewer::createStatusBar() {
 
 void STLViewer::createDockWindows() {
   // Create a DockWidget named "Informations"
-  QDockWidget *dock = new QDockWidget(tr("Informations"), this);
+  QDockWidget *dock = new QDockWidget(tr("Model Informations"), this);
   dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
   // Create one GroupBox for each type of data
   dimensionsGroupBox = new DimensionsGroupBox(this);
@@ -533,14 +548,39 @@ void STLViewer::createDockWindows() {
   propertiesGroupBox = new PropertiesGroupBox(this);
   // Create a layout inside a widget to display all GroupBoxes in one layout
   QWidget *wi = new QWidget;
+  wi->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
+                                QSizePolicy::Fixed));
   QVBoxLayout *layout = new QVBoxLayout;
   layout->addWidget(dimensionsGroupBox);
   layout->addWidget(meshInformationGroupBox);
   layout->addWidget(propertiesGroupBox);
   wi->setLayout(layout);
+  // Embed the widget that contains all GroupBoxes into the DockWidget
+  dock->setWidget(wi);
+  // Add the DockWidget at the right side of the main layout
+  addDockWidget(Qt::RightDockWidgetArea, dock);
+  // Add a button in the view menu to show/hide the DockWidget
+  viewMenu->addAction(dock->toggleViewAction());
+
+  // Create a DockWidget named "World Coordinate System"
+  dock = new QDockWidget(tr("View Informations"), this);
+  dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+  // Create one GLWidget to display the axis
+  //axisGLWidget = new AxisGLWidget(this);
+  // Create one GroupBox to display the axis
+  axisGroupBox = new AxisGroupBox(this);
+  wi = new QWidget;
   wi->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
                                 QSizePolicy::Fixed));
-  // Embed the widget that contains all GroupBoxes into the DockWidget
+  layout = new QVBoxLayout;
+  layout->addWidget(axisGroupBox);
+  wi->setLayout(layout);
+  /*axisGroupBox->setSizePolicy(QSizePolicy(QSizePolicy::MinimumExpanding,
+                                          QSizePolicy::Fixed));*/
+  // Embed the GLWidget into the DockWidget
+  //dock->setWidget(axisGLWidget);
+  // Embed the GroupBox into the DockWidget
+  //dock->setWidget(axisGroupBox);
   dock->setWidget(wi);
   // Add the DockWidget at the right side of the main layout
   addDockWidget(Qt::RightDockWidgetArea, dock);
