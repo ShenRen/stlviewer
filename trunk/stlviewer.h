@@ -26,6 +26,8 @@
 
 #include "glmdichild.h"
 
+//class AxisGLWidget;
+class AxisGroupBox;
 class DimensionsGroupBox;
 class MeshInformationGroupBox;
 class PropertiesGroupBox;
@@ -127,6 +129,8 @@ class STLViewer : public QMainWindow {
   QAction *aboutAct;
   QString curDir;
   GLWidget::LeftMouseButtonMode leftMouseButtonMode;
+  //AxisGLWidget *axisGLWidget;
+  AxisGroupBox *axisGroupBox;
   DimensionsGroupBox *dimensionsGroupBox;
   MeshInformationGroupBox *meshInformationGroupBox;
   PropertiesGroupBox *propertiesGroupBox;

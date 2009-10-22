@@ -53,24 +53,27 @@ class GLWidget : public QGLWidget {
   void setBottomView();
   void setTopFrontLeftView();
   bool isWireframeModeActivated() const { return wireframeMode; };
+  int getXRot() const { return xRot; };
+  int getYRot() const { return yRot; };
+  int getZRot() const { return zRot; };
 
  public slots:
   void setXRotation(int angle);
   void setYRotation(int angle);
   void setZRotation(int angle);
-  void setXTranslation(float distance);
-  void setYTranslation(float distance);
-  void setZoom(float zoom);
-  void setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode);
-  void setWireframeMode(bool state);
+  void setXTranslation(const float distance);
+  void setYTranslation(const float distance);
+  void setZoom(const float zoom);
+  void setLeftMouseButtonMode(const GLWidget::LeftMouseButtonMode);
+  void setWireframeMode(const bool state);
 
  signals:
-  void xRotationChanged(int angle);
-  void yRotationChanged(int angle);
-  void zRotationChanged(int angle);
-  void xTranslationChanged(float distance);
-  void yTranslationChanged(float distance);
-  void zoomChanged(float zoom);
+  void xRotationChanged(const int angle) const;
+  void yRotationChanged(const int angle) const;
+  void zRotationChanged(const int angle) const;
+  void xTranslationChanged(const float distance) const;
+  void yTranslationChanged(const float distance) const;
+  void zoomChanged(const float zoom);
 
  protected:
   void initializeGL();

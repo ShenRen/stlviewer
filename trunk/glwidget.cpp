@@ -202,7 +202,7 @@ void GLWidget::setZRotation(int angle) {
   }
 }
 
-void GLWidget::setXTranslation(float distance) {
+void GLWidget::setXTranslation(const float distance) {
   if (distance != xTrans) {
     xTrans = distance;
     emit xTranslationChanged(distance);
@@ -210,7 +210,7 @@ void GLWidget::setXTranslation(float distance) {
   }
 }
 
-void GLWidget::setYTranslation(float distance) {
+void GLWidget::setYTranslation(const float distance) {
   if (distance != yTrans) {
     yTrans = distance;
     emit yTranslationChanged(distance);
@@ -218,7 +218,7 @@ void GLWidget::setYTranslation(float distance) {
   }
 }
 
-void GLWidget::setZoom(float zoom) {
+void GLWidget::setZoom(const float zoom) {
   if (zoom != zoomFactor) {
     zoomFactor = zoom;
     if (zoom <= 0)
@@ -229,12 +229,12 @@ void GLWidget::setZoom(float zoom) {
   }
 }
 
-void GLWidget::setLeftMouseButtonMode(GLWidget::LeftMouseButtonMode mode) {
+void GLWidget::setLeftMouseButtonMode(const GLWidget::LeftMouseButtonMode mode) {
   leftMouseButtonMode = mode;
   updateCursor();
 }
 
-void GLWidget::setWireframeMode(bool state) {
+void GLWidget::setWireframeMode(const bool state) {
   makeCurrent();
   wireframeMode = state;
   updateGL();
@@ -295,17 +295,17 @@ void GLWidget::paintGL() {
   drawAxes();
 
   //gluLookAt(zoomFactor, zoomFactor, zoomFactor, xPos, yPos, zPos, 0, 1, 0);
-  glPushMatrix();
-  glLoadIdentity();
-  if (width <= height)
-    glTranslated(zoomFactor - zoomFactor/4, -zoomFactor*height/width + (zoomFactor*height/width)/5, 0.0f);
-  else
-    glTranslated(zoomFactor*width/height - (zoomFactor*width/height)/4, -zoomFactor + zoomFactor/5, 0.0f);
-  glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
-  glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
-  glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-  drawAxes();
-  glPopMatrix();
+  //glPushMatrix();
+  //glLoadIdentity();
+  //if (width <= height)
+  //  glTranslated(zoomFactor - zoomFactor/4, -zoomFactor*height/width + (zoomFactor*height/width)/5, 0.0f);
+  //else
+  //  glTranslated(zoomFactor*width/height - (zoomFactor*width/height)/4, -zoomFactor + zoomFactor/5, 0.0f);
+  //glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
+  //glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
+  //glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
+  //drawAxes();
+  //glPopMatrix();
 }
 
 void GLWidget::resizeGL(int width, int height) {
