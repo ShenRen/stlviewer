@@ -57,30 +57,33 @@ void AxisGroupBox::reset() {
   xRot->setText("");
   yRot->setText("");
   zRot->setText("");
-  axisGLWidget->hideAxis();
+  axisGLWidget->reset();
 }
 
 void AxisGroupBox::setXRotation(const int angle) {
   QString data;
-  // Write values contained in stats
+  // Display angle value
   data.setNum(angle / 16);
   xRot->setText(data + "°");
+  // Update angle value
   axisGLWidget->setXRotation(angle);
 }
 
 void AxisGroupBox::setYRotation(const int angle) {
   QString data;
-  // Write values contained in stats
+  // Display angle value
   data.setNum(angle / 16);
   yRot->setText(data + "°");
+  // Update angle value
   axisGLWidget->setYRotation(angle);
 }
 
 void AxisGroupBox::setZRotation(const int angle) {
   QString data;
-  // Write values contained in stats
+  // Display angle value
   data.setNum(angle / 16);
   zRot->setText(data + "°");
+  // Update angle value
   axisGLWidget->setZRotation(angle);
 }
 
