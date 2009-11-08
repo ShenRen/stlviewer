@@ -23,11 +23,14 @@
 
 #include <iostream>
 #include <fstream>
+#include <exception>
 
 #include "vector.h"
 
 class StlFile {
  public:
+  class wrong_header_size : public ::std::exception {};
+  class error_opening_file : public ::std::exception {};
   enum Format {
     ASCII,
     BINARY

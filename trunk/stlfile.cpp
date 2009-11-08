@@ -19,6 +19,8 @@
 // THE SOFTWARE.
 
 #include <QtCore/QtGlobal>
+#include <QtGui/QApplication>
+#include <QErrorMessage>
 #include <math.h>
 #include <string>
 #include <algorithm>
@@ -99,7 +101,7 @@ void StlFile::initialize(const ::std::string& fileName) {
       if ((fileSize - HEADER_SIZE) % SIZE_OF_FACET != 0) {
         ::std::cerr << "The file " << file << " has a wrong size."
                     << ::std::endl;
-        exit(1);
+        throw wrong_header_size();
       }
       numFacets = (fileSize - HEADER_SIZE) / SIZE_OF_FACET;
       // Read the header 
@@ -111,6 +113,12 @@ void StlFile::initialize(const ::std::string& fileName) {
       if (numFacets != headerNumFacets) {
         ::std::cerr << "Warning: File size doesn't match number of "
                     << "facets in the header." << ::std::endl;
+        QErrorMessage errMessage;
+        errMessage.showMessage("File size doesn't match number of facets "
+                               "in the header.");
+        QApplication::restoreOverrideCursor();
+        errMessage.exec();
+        QApplication::setOverrideCursor(Qt::WaitCursor);
       }
     }
     else {  // Otherwise, if the .STL file is ASCII, then do the following
@@ -129,22 +137,25 @@ void StlFile::initialize(const ::std::string& fileName) {
       file.seekg(0, ::std::ios::beg);
       // Get the header
       for (int i = 0; (i < 80) && (stats.header[i] = file.get()) != '\n'; i++)
-        stats.header[i] = '\0'; // Lose the '\n'
+        stats.header[i] = '\0';  // Lose the '\n'
       stats.header[80] = '\0';
       
       numFacets = numLines / ASCII_LINES_PER_FACET;
     }
     stats.numFacets += numFacets;
   } else {
-    exit(1);
+    ::std::cerr << "The file " << file << " could not be found." << ::std::endl;
+    throw error_opening_file();
   }
 }
 
 void StlFile::allocate() {
   // Allocate memory for the entire .STL file
   facets = new Facet[stats.numFacets];
-  if (facets == 0)
+  if (facets == 0) {
     ::std::cerr << "Problem allocating memory" << ::std::endl;
+    throw ::std::bad_alloc();
+  }
 }
 
 void StlFile::readData(int firstFacet, int first) {
@@ -310,7 +321,8 @@ void StlFile::writeBinary(const ::std::string& fileName) {
     }
     file.close();
   } else {
-    exit(1);
+    ::std::cerr << "The file " << file << " could not be found." << ::std::endl;
+    throw error_opening_file();
   }
 }
 
@@ -340,7 +352,8 @@ void StlFile::writeAscii(const ::std::string& fileName) {
     file << "endsolid" << ::std::endl;
     file.close();
   } else {
-    exit(1);
+    ::std::cerr << "The file " << file << " could not be found." << ::std::endl;
+    throw error_opening_file();
   }
   /*FILE *fp = fopen(fileName.c_str(), "w");
   fprintf(fp, "solid\n");

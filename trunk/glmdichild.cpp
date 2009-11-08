@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include <QtGui/QtGui>
+#include <exception>
 
 #include "glmdichild.h"
 
@@ -40,14 +41,40 @@ void GLMdiChild::newFile() {
 }
 
 bool GLMdiChild::loadFile(const QString &fileName) {
-  // Open the file and make an object from its content
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  stlFile->open(fileName.toStdString());
-  makeObjectFromStlFile(stlFile);
-  QApplication::restoreOverrideCursor();
-  updateGL();
-  setCurrentFile(fileName);
-  return true;
+  try {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    // Open the file and make an object from its content
+    stlFile->open(fileName.toStdString());
+    makeObjectFromStlFile(stlFile);
+    updateGL();
+    setCurrentFile(fileName);
+    QApplication::restoreOverrideCursor();
+    return true;
+  } catch (::std::bad_alloc) {
+    QApplication::restoreOverrideCursor();
+    QMessageBox msgBox;
+    msgBox.setText("Problem allocating memory.");
+    msgBox.exec();
+    return false;
+  } catch (StlFile::wrong_header_size) {
+    QApplication::restoreOverrideCursor();
+    QMessageBox msgBox;
+    msgBox.setText("The file " + fileName + " has a wrong size.");
+    msgBox.exec();
+    return false;
+  } catch (StlFile::error_opening_file) { // ::std::ios_base::failure
+    QApplication::restoreOverrideCursor();
+    QMessageBox msgBox;
+    msgBox.setText("The file " + fileName + " could not be opened.");
+    msgBox.exec();
+    return false;
+  } catch (...) {
+    QApplication::restoreOverrideCursor();
+    QMessageBox msgBox;
+    msgBox.setText("Error unknown.");
+    msgBox.exec();
+    return false;
+  }
 }
 
 bool GLMdiChild::save() {
@@ -86,12 +113,27 @@ bool GLMdiChild::saveAs() {
 }
 
 bool GLMdiChild::saveFile(const QString &fileName) {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  // Write the current object into a file
-  stlFile->write(fileName.toStdString());
-  QApplication::restoreOverrideCursor();
-  setCurrentFile(fileName);
-  return true;
+  try {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+    // Write the current object into a file
+    stlFile->write(fileName.toStdString());
+    QApplication::restoreOverrideCursor();
+    setCurrentFile(fileName);
+    return true;
+  } catch (StlFile::error_opening_file) {  // ::std::ios_base::failure
+    QApplication::restoreOverrideCursor();
+    QMessageBox msgBox;
+    msgBox.setText("Unable to write in " + fileName + ".");
+    msgBox.exec();
+    return false;
+  } catch (...) {
+    QApplication::restoreOverrideCursor();
+    QMessageBox msgBox;
+    msgBox.setText("Error unknown.");
+    msgBox.exec();
+    return false;
+  }
+  
 }
 
 bool GLMdiChild::saveImage() {
@@ -110,7 +152,9 @@ bool GLMdiChild::saveImage() {
   if (filterSel == filterBmp || QFileInfo(fileName).suffix() == ".bmp")
     format = "bmp";  
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  QPixmap originalPixmap = QPixmap::grabWindow(this->winId());
+  WId test = this->winId();
+  QPixmap originalPixmap = QPixmap::grabWindow(this->winId(), 0, 0, 200, 200);
+  //QPixmap originalPixmap = QPixmap::grabWidget(this);
   originalPixmap.save(fileName, format.toAscii());
   QApplication::restoreOverrideCursor();
   return true;

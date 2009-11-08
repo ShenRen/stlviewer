@@ -293,19 +293,6 @@ void GLWidget::paintGL() {
   }
 
   drawAxes();
-
-  //gluLookAt(zoomFactor, zoomFactor, zoomFactor, xPos, yPos, zPos, 0, 1, 0);
-  //glPushMatrix();
-  //glLoadIdentity();
-  //if (width <= height)
-  //  glTranslated(zoomFactor - zoomFactor/4, -zoomFactor*height/width + (zoomFactor*height/width)/5, 0.0f);
-  //else
-  //  glTranslated(zoomFactor*width/height - (zoomFactor*width/height)/4, -zoomFactor + zoomFactor/5, 0.0f);
-  //glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
-  //glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
-  //glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-  //drawAxes();
-  //glPopMatrix();
 }
 
 void GLWidget::resizeGL(int width, int height) {
@@ -364,20 +351,31 @@ void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
 void GLWidget::mouseMoveEvent(QMouseEvent *event) {
   int dx = event->x() - lastPos.x();
   int dy = event->y() - lastPos.y();
-  if (event->buttons() & Qt::LeftButton) {
-    if (leftMouseButtonMode == PANNING) {
-      setXTranslation(xTrans - dx*zoomFactor/100);
-      setYTranslation(yTrans + dy*zoomFactor/100);
-    } else if (leftMouseButtonMode == ROTATE) {
-      setXRotation(xRot + 8 * dy);
-      setZRotation(zRot - 8 * dx);
-    }
-  } else if (event->buttons() & Qt::RightButton) {
+  /*int x = event->x();
+  int y = event->y();*/
+
+//glTranslated(-xTrans, -yTrans, -zTrans);
+//
+//    glOrtho(-zoomFactor, zoomFactor, -zoomFactor*height/width,
+//            zoomFactor*height/width, -zoomFactor*5000.0f, zoomFactor*5000.0f);
+//  else
+//    glOrtho(-zoomFactor*width/height, zoomFactor*width/height,
+//            -zoomFactor, zoomFactor, -zoomFactor*5000.0f, zoomFactor*5000.0f);
+
+  if ((event->buttons() & Qt::LeftButton && leftMouseButtonMode == PANNING) ||
+      event->buttons() & Qt::MidButton) {
+    //setXTranslation(xTrans - dx*zoomFactor/100);
+    //setYTranslation(yTrans + dy*zoomFactor/100);
+    /*if (width <= height) {
+      setXTranslation(-(2*zoomFactor*width/height*event->x()/width+(-zoomFactor*width/height)));
+    } else {
+      setXTranslation(-(2*zoomFactor*event->x()/width+(-zoomFactor)));
+    }*/
+  } else if ((event->buttons() & Qt::LeftButton &&
+              leftMouseButtonMode == ROTATE) ||
+             event->buttons() & Qt::RightButton) {
     setXRotation(xRot + 8 * dy);
     setZRotation(zRot - 8 * dx);
-  } else if (event->buttons() & Qt::MidButton) {
-    setXTranslation(xTrans - dx*zoomFactor/100);
-    setYTranslation(yTrans + dy*zoomFactor/100);
   }
   lastPos = event->pos();
 }
