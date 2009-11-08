@@ -92,7 +92,9 @@ void STLViewer::open() {
       statusBar()->showMessage(tr("File loaded"), 2000);
       child->show();
     } else {
-      child->close();
+      setActiveSubWindow(child);
+      mdiArea->closeActiveSubWindow();
+      //child->close();
     }
   }
 }
@@ -283,7 +285,7 @@ void STLViewer::setMouseReleased(Qt::MouseButtons button) {
 GLMdiChild *STLViewer::createGLMdiChild() {
   GLMdiChild *child = new GLMdiChild;
   mdiArea->addSubWindow(child);
-  child->setLeftMouseButtonMode(leftMouseButtonMode);
+  /*child->setLeftMouseButtonMode(leftMouseButtonMode);
   connect(child, SIGNAL(mouseButtonPressed(Qt::MouseButtons)), this,
     SLOT(setMousePressed(Qt::MouseButtons)));
   connect(child, SIGNAL(mouseButtonReleased(Qt::MouseButtons)), this,
@@ -297,7 +299,7 @@ GLMdiChild *STLViewer::createGLMdiChild() {
   connect(child, SIGNAL(yRotationChanged(const int)), axisGroupBox,
           SLOT(setYRotation(const int)));
   connect(child, SIGNAL(zRotationChanged(const int)), axisGroupBox,
-          SLOT(setZRotation(const int)));
+          SLOT(setZRotation(const int)));*/
   return child;
 }
 
@@ -609,4 +611,3 @@ QMdiSubWindow *STLViewer::findGLMdiChild(const QString &fileName) {
   }
   return 0;
 }
-
