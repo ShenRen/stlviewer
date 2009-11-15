@@ -101,16 +101,11 @@ void GLWidget::updateCursor() {
 void GLWidget::setDefaultView() {
   setTopFrontLeftView();
   unzoom();
-  /*makeCurrent();
-  xRot = yRot = zRot = 0;
-  xTrans = yTrans = zTrans = 0;
-  zoomFactor = defaultZoomFactor;*/
-  //glMatrixMode(GL_MODELVIEW);
-  //glPushMatrix();
-  //glLoadIdentity();
-  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
-  //glPopMatrix();
-  //updateGL();
+  /*glMatrixMode(GL_MODELVIEW);
+  glPushMatrix();
+  glLoadIdentity();
+  glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
+  glPopMatrix();*/
 }
 
 void GLWidget::zoom() {
@@ -168,10 +163,8 @@ void GLWidget::setBottomView() {
 
 void GLWidget::setTopFrontLeftView() {
   makeCurrent();
-  //setXRotation(315*16);
   setXRotation(290*16);
   setYRotation(0);
-  //setZRotation(45*16);
   setZRotation(30*16);
 }
 
@@ -328,49 +321,36 @@ void GLWidget::mousePressEvent(QMouseEvent *event) {
 
 void GLWidget::mouseReleaseEvent(QMouseEvent *event) {
   updateCursor();
-  //if (event->button() & Qt::MidButton || (event->button() & Qt::MidButton &&
-  //    translationMode)) {
-
-  //  //glMatrixMode(GL_MODELVIEW);
-  //  //glPushMatrix();
-  //  //glLoadIdentity();
-  //  //glTranslated(-xTrans, -yTrans, -zTrans);
-  //  //glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
-  //  //glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
-  //  //glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
-  //  //glMultMatrixf(panMatrix);
-  //  //glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
-  //  //glPopMatrix();
-
-  //  /*xRot = yRot = zRot = 0;
-  //  xTrans = yTrans = zTrans = 0;*/
-  //  updateGL();
-  //}
+  /*if (event->button() & Qt::MidButton || (event->button() & Qt::LeftButton &&
+      leftMouseButtonMode == PANNING)) {
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glTranslated(-xTrans, -yTrans, -zTrans);
+    glRotated(xRot / 16.0, 1.0, 0.0, 0.0);
+    glRotated(yRot / 16.0, 0.0, 1.0, 0.0);
+    glRotated(zRot / 16.0, 0.0, 0.0, 1.0);
+    glMultMatrixf(panMatrix);
+    glGetFloatv(GL_MODELVIEW_MATRIX, panMatrix);
+    glPopMatrix();
+    xRot = yRot = zRot = 0;
+    xTrans = yTrans = zTrans = 0;
+    updateGL();
+  }*/
 }
 
 void GLWidget::mouseMoveEvent(QMouseEvent *event) {
   int dx = event->x() - lastPos.x();
   int dy = event->y() - lastPos.y();
-  /*int x = event->x();
-  int y = event->y();*/
-
-//glTranslated(-xTrans, -yTrans, -zTrans);
-//
-//    glOrtho(-zoomFactor, zoomFactor, -zoomFactor*height/width,
-//            zoomFactor*height/width, -zoomFactor*5000.0f, zoomFactor*5000.0f);
-//  else
-//    glOrtho(-zoomFactor*width/height, zoomFactor*width/height,
-//            -zoomFactor, zoomFactor, -zoomFactor*5000.0f, zoomFactor*5000.0f);
-
   if ((event->buttons() & Qt::LeftButton && leftMouseButtonMode == PANNING) ||
       event->buttons() & Qt::MidButton) {
-    //setXTranslation(xTrans - dx*zoomFactor/100);
-    //setYTranslation(yTrans + dy*zoomFactor/100);
-    /*if (width <= height) {
-      setXTranslation(-(2*zoomFactor*width/height*event->x()/width+(-zoomFactor*width/height)));
+    if (width <= height) {
+      setXTranslation(xTrans - dx*2*zoomFactor/width);
+      setYTranslation(yTrans + dy*2*zoomFactor/width);
     } else {
-      setXTranslation(-(2*zoomFactor*event->x()/width+(-zoomFactor)));
-    }*/
+      setXTranslation(xTrans - dx*2*zoomFactor/height);
+      setYTranslation(yTrans + dy*2*zoomFactor/height);
+    }
   } else if ((event->buttons() & Qt::LeftButton &&
               leftMouseButtonMode == ROTATE) ||
              event->buttons() & Qt::RightButton) {
