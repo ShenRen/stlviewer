@@ -65,6 +65,7 @@ Section "STLViewer" SecSTLViewer
   SetOutPath "$INSTDIR"
   
   File "..\Release\STLViewer.exe"
+  File "STLViewer.ico"
   File "LICENCE"
   File "README"
   File "QtCore4.dll"
@@ -109,6 +110,7 @@ SectionEnd
 Section "Uninstall"
 
   Delete "$INSTDIR\STLViewer.exe"
+  Delete "$INSTDIR\STLViewer.ico"
   Delete "$INSTDIR\LICENCE"
   Delete "$INSTDIR\README"
   Delete "$INSTDIR\QtCore4.dll"
