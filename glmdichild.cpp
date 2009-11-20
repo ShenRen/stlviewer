@@ -152,10 +152,8 @@ bool GLMdiChild::saveImage() {
   if (filterSel == filterBmp || QFileInfo(fileName).suffix() == ".bmp")
     format = "bmp";  
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  //QPixmap originalPixmap = QPixmap::grabWindow(this->winId(), 0, 0, 200, 200);
-  //QPixmap originalPixmap = QPixmap::grabWidget(this);
-  QPixmap originalPixmap = QPixmap::grabWindow(this->winId());
-  originalPixmap.save(fileName, format.toAscii());
+  QImage screenshot = this->grabFrameBuffer();
+  screenshot.save(fileName, format.toAscii());
   QApplication::restoreOverrideCursor();
   return true;
 }
