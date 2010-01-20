@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
   Q_INIT_RESOURCE(stlviewer);
   QApplication a(argc, argv);
   a.setWindowIcon(QIcon(":STLViewer/Images/stl.png"));
-  a.setApplicationVersion("1.0");
+  a.setApplicationVersion("1.1");
   STLViewer w;
   w.show();
   return a.exec();
