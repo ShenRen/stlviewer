@@ -87,12 +87,13 @@ void StlFile::initialize(const ::std::string& fileName) {
     int fileSize = file.tellg();
     // Check for binary or ASCII file
     file.seekg(0, ::std::ios::beg);
-    stats.type = ASCII;
-    ::std::string type;
-    file >> type;
-    transform(type.begin(), type.end(), type.begin(), tolower);
-    if (type.compare("solid"))
-      stats.type = BINARY;
+    stats.type = BINARY;
+    int c;
+    while((c = file.get()) != EOF && c <= 127) 
+        ;
+    if(c == EOF) {
+      stats.type = ASCII;
+    }
     file.seekg(0, ::std::ios::beg);
     // Get the header and the number of facets in the .STL file 
     // If the .STL file is binary, then do the following 
