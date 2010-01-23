@@ -79,7 +79,7 @@ void StlFile::initialize(const ::std::string& fileName) {
   stats.volume = -1.0;
   facets = 0;
   // Open the file
-  file.open(fileName.c_str(), ::std::ios::in|::std::ios::binary);
+  file.open(fileName.c_str(), ::std::ios::binary);
   if (file.is_open()) {
     int numFacets;
     // Find length of file
@@ -105,9 +105,10 @@ void StlFile::initialize(const ::std::string& fileName) {
         throw wrong_header_size();
       }
       numFacets = (fileSize - HEADER_SIZE) / SIZE_OF_FACET;
-      // Read the header 
-      file.read(stats.header, JUNK_SIZE);
-      stats.header[80] = '\0';
+      // Read the header
+      char buffer[JUNK_SIZE];
+      file.read(buffer, JUNK_SIZE);
+      stats.header = buffer;
       // Read the int following the header.
       // This should contain the number of facets
       int headerNumFacets = readIntFromBytes(file);
@@ -123,24 +124,18 @@ void StlFile::initialize(const ::std::string& fileName) {
       }
     }
     else {  // Otherwise, if the .STL file is ASCII, then do the following
-      // Find the number of facets
-      int j = 0;
-      int numLines = 1;
-      for (int i = 0; i < fileSize ; i++) {
-	      j++;
-	      if (file.get() == '\n') {
-          if (j > 4) {  // don't count short lines
-  		      numLines++;
-		      }
-          j = 0;
-        }
-	    }
       file.seekg(0, ::std::ios::beg);
       // Get the header
-      for (int i = 0; (i < 80) && (stats.header[i] = file.get()) != '\n'; i++)
-        stats.header[i] = '\0';  // Lose the '\n'
-      stats.header[80] = '\0';
-      
+      getline(file, stats.header);
+      // Find the number of facets
+      int numLines = 0;
+      ::std::string line;
+      while (!getline(file, line).eof()) {
+        if (line.size() > 4) {  // don't count short lines
+          numLines++;
+        }
+      }
+      file.seekg(0, ::std::ios::beg);
       numFacets = numLines / ASCII_LINES_PER_FACET;
     }
     stats.numFacets += numFacets;
@@ -164,8 +159,9 @@ void StlFile::readData(int firstFacet, int first) {
     file.seekg(HEADER_SIZE, ::std::ios::beg);
   } else {
     file.seekg(0, ::std::ios::beg);
+    ::std::string line;
     // Skip the first line of the file
-    while(file.get() != '\n');
+    getline(file, line);
   }
   Facet facet;
   for (int i = firstFacet; i < stats.numFacets; i++) {
