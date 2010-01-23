@@ -47,17 +47,17 @@ class StlFile {
     Extra extra;
   } Facet;
   typedef struct {
-    char          header[81];
-    Format        type;
-    int           numFacets;
-    int           numPoints;
-    Vector       max;
-    Vector       min;
-    Vector       size;
-    float         boundingDiameter;
-    float         shortestEdge;
-    float         volume;
-    float         surface;
+    ::std::string   header;
+    Format          type;
+    int             numFacets;
+    int             numPoints;
+    Vector          max;
+    Vector          min;
+    Vector          size;
+    float           boundingDiameter;
+    float           shortestEdge;
+    float           volume;
+    float           surface;
   } Stats;
   StlFile();
   ~StlFile();
