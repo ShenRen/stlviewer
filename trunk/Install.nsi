@@ -12,7 +12,7 @@
 
   ;Name and file
   Name "STLViewer"
-  OutFile "STLViewer_1.0_win32-setup.exe"
+  OutFile "STLViewer_1.1_win32-setup.exe"
 
   ;Default installation folder
   InstallDir "$PROGRAMFILES\STLViewer"
