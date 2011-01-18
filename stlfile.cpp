@@ -375,6 +375,20 @@ void StlFile::writeAscii(const ::std::string& fileName) {
   fclose(fp);*/
 }
 
+static bool compareVectors(Vector i, Vector j)
+{
+  Vector diff;
+  diff = i - j;
+  return (diff.Magnitude() < 0);
+}
+
+static bool equalVectors(Vector i, Vector j)
+{
+  Vector diff;
+  diff = i - j;
+  return (diff.Magnitude() == 0);
+}
+
 int StlFile::getNumPoints() {
   ::std::vector<Vector> vectors;
   for (int i = 0; i < stats.numFacets; i++) {
@@ -382,8 +396,8 @@ int StlFile::getNumPoints() {
       vectors.push_back(facets[i].vector[j]);
     }
   }
-  ::std::sort(vectors.begin(), vectors.end());
-  vectors.erase(::std::unique(vectors.begin(), vectors.end()), vectors.end());
+  ::std::sort(vectors.begin(), vectors.end(), compareVectors);
+  ::std::unique(vectors.begin(), vectors.end(), equalVectors);
   return vectors.size();
 }
 
